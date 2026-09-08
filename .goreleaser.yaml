@@ -1,0 +1,94 @@
+# GoReleaser v2. Run locally with `make release-snapshot`; CI runs it from
+# .github/workflows/release.yml on v* tags.
+version: 2
+
+project_name: kfuse
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: kfuse
+    main: ./cmd/kfuse
+    binary: kfuse
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: tarball
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - NOTICE
+      - THIRD_PARTY_LICENSES.md
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+dockers_v2:
+  - id: kfuse
+    dockerfile: Dockerfile.goreleaser
+    images:
+      - addisonhuddy/kfuse
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .Prerelease }}v{{ .Major }}.{{ .Minor }}{{ end }}"
+      - "{{ if not .Prerelease }}latest{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      org.opencontainers.image.title: "{{ .ProjectName }}"
+      org.opencontainers.image.description: branching overlay filesystem for coding agents
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.created: "{{ .Date }}"
+      org.opencontainers.image.source: https://github.com/addisonhuddy/kfuse
+      org.opencontainers.image.licenses: Apache-2.0
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Other
+      order: 999
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+release:
+  github:
+    owner: addisonhuddy
+    name: kfuse
+  draft: false
+  prerelease: auto
+  footer: |
+    ## Docker
+
+    ```sh
+    docker pull addisonhuddy/kfuse:{{ .Version }}
+    ```
+
+    Run with `--privileged --device /dev/fuse`; see the README.

@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package kfuse.v1;
+
+option go_package = "github.com/addisonhuddy/kfuse/api/kfusev1";
+
+// EventEnvelope is the Kafka record value. Records carry only metadata and
+// blob references; file bytes live in S3. Reads are never logged.
+message EventEnvelope {
+  uint64 seq = 1;            // per-session, writer-assigned, monotonic from 1
+  int64  unix_micros = 2;
+  string session_id = 3;
+  string lower_id = 4;
+  oneof op {
+    SessionStart session_start = 10;
+    Create       create        = 11;
+    Write        write         = 12;
+    Unlink       unlink        = 13;
+    Rmdir        rmdir         = 14;
+    Mkdir        mkdir         = 15;
+    Rename       rename        = 16;
+    Symlink      symlink       = 17;
+    Setattr      setattr       = 18;
+  }
+}
+
+message SessionStart {
+  string lower_id = 1;
+  Lineage lineage = 2;  // empty for a root (new) session
+}
+
+message Lineage {
+  string parent_session_id = 1;
+  int64  parent_offset     = 2;  // inclusive end of parent prefix (= B)
+}
+
+message Write {
+  string path        = 1;  // relative to lower root, cleaned, '/'-sep, no leading '/'
+  int64  offset      = 2;
+  uint64 length      = 3;
+  bytes  blob_id     = 4;  // sha256 of the blob object
+  uint64 blob_offset = 5;
+  bool   eof         = 6;  // true => truncate file to (offset+length) after this write
+  uint32 mode        = 7;  // used only when this Write creates the file
+  bool   fallthrough = 8;  // true when this Write creates a node over a lower file (sparse CoW)
+  uint32 uid         = 9;  // carried when materializing a lower-backed file (sparse CoW)
+  uint32 gid         = 10; // carried when materializing a lower-backed file (sparse CoW)
+}
+
+message Create {
+  string path = 1;
+  uint32 mode = 2;
+  uint32 uid  = 3;
+  uint32 gid  = 4;
+}
+
+message Mkdir {
+  string path = 1;
+  uint32 mode = 2;
+  uint32 uid  = 3;
+  uint32 gid  = 4;
+}
+
+message Symlink {
+  string path   = 1;
+  string target = 2;
+  uint32 uid    = 3;
+  uint32 gid    = 4;
+}
+
+message Unlink { string path = 1; }
+message Rmdir  { string path = 1; }
+message Rename {
+  string from = 1;
+  string to = 2;
+  bool from_lower = 3;  // true if `from` existed in the lower tree (whiteout it)
+}
+
+message Setattr {
+  string         path     = 1;
+  optional uint32 mode    = 2;
+  optional uint32 uid     = 3;
+  optional uint32 gid     = 4;
+  optional int64  atime_ns = 5;
+  optional int64  mtime_ns = 6;
+  optional uint64 size    = 7;  // truncate (up or down)
+}

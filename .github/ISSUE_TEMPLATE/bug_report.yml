@@ -1,0 +1,40 @@
+name: Bug report
+description: Something in kfuse does not behave as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      render: sh
+      placeholder: |
+        kfuse session new
+        kfuse mount
+        echo hi > file
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: kfuse version
+      description: Output of `kfuse version`
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS / kernel, how kfuse is running (Docker `--privileged`, Firecracker, bare metal), Kafka and S3 providers.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Daemon or command output. Redact credentials, broker hostnames, and bucket names if needed.
+      render: text

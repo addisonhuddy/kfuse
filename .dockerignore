@@ -1,0 +1,28 @@
+# Secrets — never ship them into an image
+.env
+.env.*
+!.env.example
+*.pem
+
+# VCS / local
+.git
+.gitignore
+AGENT.md
+.opencode/
+
+# Build artifacts (host-side)
+bin/
+/dist/
+/kfuse
+*.test
+*.out
+coverage.*
+
+# Docs / tooling not needed for any image (examples/ stays: the demo
+# Dockerfiles build from the repo root and copy files from it)
+docs/
+.github/
+.agents/
+*.md
+examples/e2b-sandbox/
+examples/perf/results/

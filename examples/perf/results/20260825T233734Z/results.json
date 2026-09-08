@@ -1,0 +1,2189 @@
+{
+  "generated_at": "2026-08-25T23:40:36Z",
+  "scenarios": {
+    "branch-client": {
+      "series": {
+        "branch_wall{try1}": {
+          "count": 1,
+          "mean_us": 8073054.255,
+          "p50_us": 8073054.255,
+          "p95_us": 8073054.255,
+          "p99_us": 8073054.255,
+          "min_us": 8073054.255,
+          "max_us": 8073054.255
+        },
+        "branch_wall{try2}": {
+          "count": 1,
+          "mean_us": 6073968.308,
+          "p50_us": 6073968.308,
+          "p95_us": 6073968.308,
+          "p99_us": 6073968.308,
+          "min_us": 6073968.308,
+          "max_us": 6073968.308
+        },
+        "branch_wall{try3}": {
+          "count": 1,
+          "mean_us": 8072576.491,
+          "p50_us": 8072576.491,
+          "p95_us": 8072576.491,
+          "p99_us": 8072576.491,
+          "min_us": 8072576.491,
+          "max_us": 8072576.491
+        }
+      }
+    },
+    "branch-daemon": {
+      "series": {
+        "resume.apply": {
+          "count": 3,
+          "mean_us": 69.04366666666667,
+          "p50_us": 56.752,
+          "p95_us": 56.752,
+          "p99_us": 56.752,
+          "min_us": 47.92,
+          "max_us": 102.459
+        },
+        "resume.image_load": {
+          "count": 3,
+          "mean_us": 6685.185666666667,
+          "p50_us": 6506.848,
+          "p95_us": 6506.848,
+          "p99_us": 6506.848,
+          "min_us": 6499.056,
+          "max_us": 7049.653
+        },
+        "resume.log_read": {
+          "count": 3,
+          "mean_us": 3337187.3206666666,
+          "p50_us": 4003869.098,
+          "p95_us": 4003869.098,
+          "p99_us": 4003869.098,
+          "min_us": 2003422.591,
+          "max_us": 4004270.273
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 102459,
+          "ev": "resume",
+          "from_offset": 1821,
+          "had_image": true,
+          "image_load_ns": 6506848,
+          "log_read_ns": 4003869098,
+          "replayed_events": 0,
+          "session": "9e23aeef92b1275ec86182cc39784b4b",
+          "ts": 1787701156664033800
+        },
+        {
+          "branch_at": 1819,
+          "ev": "branch",
+          "image_bytes": 253135,
+          "ns": 8057508592,
+          "parent": "c27df4232027a044dcdf0d2221536e37",
+          "replayed_events": 19,
+          "ts": 1787701156664043000
+        },
+        {
+          "apply_ns": 47920,
+          "ev": "resume",
+          "from_offset": 680,
+          "had_image": true,
+          "image_load_ns": 7049653,
+          "log_read_ns": 2003422591,
+          "replayed_events": 0,
+          "session": "0e82e0ae93c66a9cc8d3012b554654da",
+          "ts": 1787701162739558400
+        },
+        {
+          "branch_at": 1820,
+          "ev": "branch",
+          "image_bytes": 253135,
+          "ns": 6058515278,
+          "parent": "c27df4232027a044dcdf0d2221536e37",
+          "replayed_events": 19,
+          "ts": 1787701162739567400
+        },
+        {
+          "apply_ns": 56752,
+          "ev": "resume",
+          "from_offset": 4754,
+          "had_image": true,
+          "image_load_ns": 6499056,
+          "log_read_ns": 4004270273,
+          "replayed_events": 0,
+          "session": "f576b33a23251c797d5e31a502c76564",
+          "ts": 1787701170813888500
+        },
+        {
+          "branch_at": 1820,
+          "ev": "branch",
+          "image_bytes": 253135,
+          "ns": 8057498047,
+          "parent": "c27df4232027a044dcdf0d2221536e37",
+          "replayed_events": 19,
+          "ts": 1787701170813898000
+        }
+      ]
+    },
+    "checkpoint-client": {
+      "series": {
+        "checkpoint_wall{files=100}": {
+          "count": 1,
+          "mean_us": 4039017.474,
+          "p50_us": 4039017.474,
+          "p95_us": 4039017.474,
+          "p99_us": 4039017.474,
+          "min_us": 4039017.474,
+          "max_us": 4039017.474
+        },
+        "checkpoint_wall{files=400}": {
+          "count": 1,
+          "mean_us": 4068822.245,
+          "p50_us": 4068822.245,
+          "p95_us": 4068822.245,
+          "p99_us": 4068822.245,
+          "min_us": 4068822.245,
+          "max_us": 4068822.245
+        }
+      }
+    },
+    "checkpoint-daemon": {
+      "series": {
+        "blob_put": {
+          "count": 1317,
+          "mean_us": 1262.8628056188306,
+          "p50_us": 1217.379,
+          "p95_us": 1549.706,
+          "p99_us": 1759.311,
+          "min_us": 1026.966,
+          "max_us": 6086.365
+        },
+        "checkpoint.marshal": {
+          "count": 21,
+          "mean_us": 868.7107619047619,
+          "p50_us": 735.292,
+          "p95_us": 1600.836,
+          "p99_us": 1600.836,
+          "min_us": 160.623,
+          "max_us": 1772.644
+        },
+        "checkpoint.upload": {
+          "count": 21,
+          "mean_us": 1819.4100952380952,
+          "p50_us": 1778.825,
+          "p95_us": 2528.608,
+          "p99_us": 2528.608,
+          "min_us": 1267.154,
+          "max_us": 2663.424
+        },
+        "commit.create.apply": {
+          "count": 502,
+          "mean_us": 3.470312749003984,
+          "p50_us": 2.816,
+          "p95_us": 4.585,
+          "p99_us": 7.662,
+          "min_us": 2.219,
+          "max_us": 105.533
+        },
+        "commit.create.kafka_append": {
+          "count": 502,
+          "mean_us": 7007.394621513944,
+          "p50_us": 6888.699,
+          "p95_us": 7575.817,
+          "p99_us": 10198.064,
+          "min_us": 6474.675,
+          "max_us": 11975.134
+        },
+        "commit.write.apply": {
+          "count": 1315,
+          "mean_us": 17.861631939163498,
+          "p50_us": 13.401,
+          "p95_us": 39.576,
+          "p99_us": 136.565,
+          "min_us": 2.875,
+          "max_us": 342.272
+        },
+        "commit.write.kafka_append": {
+          "count": 1315,
+          "mean_us": 7157.703143726236,
+          "p50_us": 7033.868,
+          "p95_us": 7694.618,
+          "p99_us": 10292.384,
+          "min_us": 6577.772,
+          "max_us": 13768.809
+        },
+        "fuse_lookup": {
+          "count": 502,
+          "mean_us": 7.870462151394423,
+          "p50_us": 7.325,
+          "p95_us": 10.367,
+          "p99_us": 16.232,
+          "min_us": 5.915,
+          "max_us": 22.293
+        },
+        "fuse_write": {
+          "count": 1317,
+          "mean_us": 12192.22661655277,
+          "p50_us": 14045.984,
+          "p95_us": 15657.002,
+          "p99_us": 18309.971,
+          "min_us": 7723.776,
+          "max_us": 22497.114
+        },
+        "resume.apply": {
+          "count": 2,
+          "mean_us": 69.44,
+          "p50_us": 59.508,
+          "p95_us": 59.508,
+          "p99_us": 59.508,
+          "min_us": 59.508,
+          "max_us": 79.372
+        },
+        "resume.image_load": {
+          "count": 2,
+          "mean_us": 1882.4575,
+          "p50_us": 937.728,
+          "p95_us": 937.728,
+          "p99_us": 937.728,
+          "min_us": 937.728,
+          "max_us": 2827.187
+        },
+        "resume.log_read": {
+          "count": 2,
+          "mean_us": 3004083.316,
+          "p50_us": 2004416.791,
+          "p95_us": 2004416.791,
+          "p99_us": 2004416.791,
+          "min_us": 2004416.791,
+          "max_us": 4003749.841
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 59508,
+          "ev": "resume",
+          "from_offset": 200,
+          "had_image": true,
+          "image_load_ns": 2827187,
+          "log_read_ns": 4003749841,
+          "replayed_events": 1,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701132234207500
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 25361,
+          "marshal_ns": 160623,
+          "offset": 200,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701132236157200,
+          "upload_ns": 1778825
+        },
+        {
+          "apply_ns": 79372,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 937728,
+          "log_read_ns": 2004416791,
+          "replayed_events": 1,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701126127022000
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 12547,
+          "marshal_ns": 239669,
+          "offset": 99,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701127405147000,
+          "upload_ns": 1267154
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 25197,
+          "marshal_ns": 199290,
+          "offset": 199,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701128189839000,
+          "upload_ns": 1426488
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 37837,
+          "marshal_ns": 292568,
+          "offset": 299,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701133024113000,
+          "upload_ns": 1840799
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 50487,
+          "marshal_ns": 369384,
+          "offset": 399,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701133811246300,
+          "upload_ns": 1567296
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 63187,
+          "marshal_ns": 412809,
+          "offset": 499,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701134596808200,
+          "upload_ns": 1590952
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 75887,
+          "marshal_ns": 496817,
+          "offset": 599,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701135377284000,
+          "upload_ns": 1658390
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 126852,
+          "marshal_ns": 1341950,
+          "offset": 1000,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701142566801200,
+          "upload_ns": 2663424
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 88587,
+          "marshal_ns": 591435,
+          "offset": 699,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701136155474700,
+          "upload_ns": 1613586
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 101287,
+          "marshal_ns": 621858,
+          "offset": 799,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701136934378000,
+          "upload_ns": 1644896
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 113987,
+          "marshal_ns": 599297,
+          "offset": 899,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701137704949800,
+          "upload_ns": 1707534
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 126688,
+          "marshal_ns": 735292,
+          "offset": 999,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701138491614500,
+          "upload_ns": 1719979
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 141926,
+          "marshal_ns": 1460627,
+          "offset": 1099,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701143295314000,
+          "upload_ns": 1747173
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 157326,
+          "marshal_ns": 1092368,
+          "offset": 1199,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701144032172800,
+          "upload_ns": 1796843
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 169184,
+          "marshal_ns": 1147795,
+          "offset": 1277,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701144623441700,
+          "upload_ns": 2528608
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 172726,
+          "marshal_ns": 1600836,
+          "offset": 1299,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701144774084400,
+          "upload_ns": 1819939
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 188126,
+          "marshal_ns": 1772644,
+          "offset": 1399,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701145500582100,
+          "upload_ns": 1797219
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 203535,
+          "marshal_ns": 1167935,
+          "offset": 1499,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701146231190000,
+          "upload_ns": 1868059
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 219035,
+          "marshal_ns": 1164653,
+          "offset": 1599,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701146963762200,
+          "upload_ns": 2022827
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 234535,
+          "marshal_ns": 1265459,
+          "offset": 1699,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701147698931000,
+          "upload_ns": 2075442
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 250190,
+          "marshal_ns": 1509617,
+          "offset": 1800,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701148445186600,
+          "upload_ns": 2072179
+        }
+      ]
+    },
+    "ckpt-impact-client": {
+      "series": {
+        "client_write{writers=2}": {
+          "count": 817,
+          "mean_us": 14659.214215422277,
+          "p50_us": 14379.439,
+          "p95_us": 16675.216,
+          "p99_us": 18867.041,
+          "min_us": 11948.176,
+          "max_us": 22642.466
+        }
+      },
+      "summaries": [
+        {
+          "elapsed_ns": 6011429289,
+          "ev": "throughput",
+          "events": 817,
+          "events_per_sec": 135.91,
+          "label": "writers=2",
+          "ts": 1787701148584739300,
+          "writers": 2
+        }
+      ]
+    },
+    "mem": {
+      "summaries": [
+        {
+          "ev": "mem",
+          "label": "post-throughput",
+          "rss_kb": 26824,
+          "ts": 1787701124044382700
+        },
+        {
+          "ev": "mem",
+          "label": "files=100",
+          "rss_kb": 21620,
+          "ts": 1787701128198454500
+        },
+        {
+          "ev": "mem",
+          "label": "files=400",
+          "rss_kb": 22832,
+          "ts": 1787701138499225000
+        }
+      ]
+    },
+    "meta-client": {
+      "series": {
+        "client_readdir{cold-deep}": {
+          "count": 1,
+          "mean_us": 1859.913,
+          "p50_us": 1859.913,
+          "p95_us": 1859.913,
+          "p99_us": 1859.913,
+          "min_us": 1859.913,
+          "max_us": 1859.913
+        },
+        "client_readdir{cold-wide}": {
+          "count": 1,
+          "mean_us": 8142.722,
+          "p50_us": 8142.722,
+          "p95_us": 8142.722,
+          "p99_us": 8142.722,
+          "min_us": 8142.722,
+          "max_us": 8142.722
+        },
+        "client_readdir{warm-deep}": {
+          "count": 1,
+          "mean_us": 173.702,
+          "p50_us": 173.702,
+          "p95_us": 173.702,
+          "p99_us": 173.702,
+          "min_us": 173.702,
+          "max_us": 173.702
+        },
+        "client_readdir{warm-wide}": {
+          "count": 1,
+          "mean_us": 6812.158,
+          "p50_us": 6812.158,
+          "p95_us": 6812.158,
+          "p99_us": 6812.158,
+          "min_us": 6812.158,
+          "max_us": 6812.158
+        },
+        "client_stat{cold-deep}": {
+          "count": 1,
+          "mean_us": 15.995,
+          "p50_us": 15.995,
+          "p95_us": 15.995,
+          "p99_us": 15.995,
+          "min_us": 15.995,
+          "max_us": 15.995
+        },
+        "client_stat{cold-wide}": {
+          "count": 1000,
+          "mean_us": 2.796599,
+          "p50_us": 2.305,
+          "p95_us": 2.707,
+          "p99_us": 7.287,
+          "min_us": 2.101,
+          "max_us": 320.433
+        },
+        "client_stat{warm-deep}": {
+          "count": 1,
+          "mean_us": 14.264,
+          "p50_us": 14.264,
+          "p95_us": 14.264,
+          "p99_us": 14.264,
+          "min_us": 14.264,
+          "max_us": 14.264
+        },
+        "client_stat{warm-wide}": {
+          "count": 1000,
+          "mean_us": 2.3738710000000003,
+          "p50_us": 2.176,
+          "p95_us": 2.406,
+          "p99_us": 8.046,
+          "min_us": 2.026,
+          "max_us": 18.536
+        }
+      }
+    },
+    "meta-daemon": {
+      "series": {
+        "fuse_lookup": {
+          "count": 2068,
+          "mean_us": 2.700358800773694,
+          "p50_us": 2.202,
+          "p95_us": 4.212,
+          "p99_us": 12.274,
+          "min_us": 1.863,
+          "max_us": 79.269
+        },
+        "fuse_readdir": {
+          "count": 4,
+          "mean_us": 327.56275,
+          "p50_us": 37.016,
+          "p95_us": 416.088,
+          "p99_us": 416.088,
+          "min_us": 35.764,
+          "max_us": 821.383
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 86.317,
+          "p50_us": 86.317,
+          "p95_us": 86.317,
+          "p99_us": 86.317,
+          "min_us": 86.317,
+          "max_us": 86.317
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 924.396,
+          "p50_us": 924.396,
+          "p95_us": 924.396,
+          "p99_us": 924.396,
+          "min_us": 924.396,
+          "max_us": 924.396
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4007429.357,
+          "p50_us": 4007429.357,
+          "p95_us": 4007429.357,
+          "p99_us": 4007429.357,
+          "min_us": 4007429.357,
+          "max_us": 4007429.357
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 86317,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 924396,
+          "log_read_ns": 4007429357,
+          "replayed_events": 1,
+          "session": "39dd335c0ff2b5343f638f80e21a1144",
+          "ts": 1787701086830847200
+        }
+      ]
+    },
+    "read-client": {
+      "series": {
+        "client_read{cold-lower}": {
+          "count": 256,
+          "mean_us": 2.404265625,
+          "p50_us": 1.424,
+          "p95_us": 1.63,
+          "p99_us": 22.37,
+          "min_us": 1.357,
+          "max_us": 57.523
+        },
+        "client_read{cold-overlay}": {
+          "count": 256,
+          "mean_us": 696.5736015625,
+          "p50_us": 1.495,
+          "p95_us": 6535.756,
+          "p99_us": 19465.816,
+          "min_us": 1.373,
+          "max_us": 27456.616
+        },
+        "client_read{warm-lower}": {
+          "count": 256,
+          "mean_us": 2.2032890625,
+          "p50_us": 1.407,
+          "p95_us": 1.741,
+          "p99_us": 19.215,
+          "min_us": 1.347,
+          "max_us": 42.841
+        },
+        "client_read{warm-overlay}": {
+          "count": 256,
+          "mean_us": 647.6125703125,
+          "p50_us": 1.512,
+          "p95_us": 3833.75,
+          "p99_us": 19527.058,
+          "min_us": 1.336,
+          "max_us": 23183.519
+        }
+      }
+    },
+    "read-daemon": {
+      "series": {
+        "blob_get": {
+          "count": 512,
+          "mean_us": 962.47330859375,
+          "p50_us": 818.094,
+          "p95_us": 1669.263,
+          "p99_us": 3088.818,
+          "min_us": 686.478,
+          "max_us": 8727.7
+        },
+        "fuse_lookup": {
+          "count": 12,
+          "mean_us": 6.344333333333334,
+          "p50_us": 2.516,
+          "p95_us": 11.025,
+          "p99_us": 11.025,
+          "min_us": 1.153,
+          "max_us": 31.76
+        },
+        "fuse_read[lower]": {
+          "count": 24,
+          "mean_us": 25.376,
+          "p50_us": 25.558,
+          "p95_us": 46.117,
+          "p99_us": 49.898,
+          "min_us": 1.325,
+          "max_us": 84.125
+        },
+        "fuse_read[overlay]": {
+          "count": 40,
+          "mean_us": 12601.46565,
+          "p50_us": 7052.296,
+          "p95_us": 31131.404,
+          "p99_us": 34089.697,
+          "min_us": 3085.102,
+          "max_us": 34958.541
+        },
+        "fuse_readdir": {
+          "count": 4,
+          "mean_us": 36.83375,
+          "p50_us": 28.289,
+          "p95_us": 39.411,
+          "p99_us": 39.411,
+          "min_us": 23.82,
+          "max_us": 55.815
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 494.579,
+          "p50_us": 494.579,
+          "p95_us": 494.579,
+          "p99_us": 494.579,
+          "min_us": 494.579,
+          "max_us": 494.579
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 3163.154,
+          "p50_us": 3163.154,
+          "p95_us": 3163.154,
+          "p99_us": 3163.154,
+          "min_us": 3163.154,
+          "max_us": 3163.154
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4003846.178,
+          "p50_us": 4003846.178,
+          "p95_us": 4003846.178,
+          "p99_us": 4003846.178,
+          "min_us": 4003846.178,
+          "max_us": 4003846.178
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 494579,
+          "ev": "resume",
+          "from_offset": 612,
+          "had_image": true,
+          "image_load_ns": 3163154,
+          "log_read_ns": 4003846178,
+          "replayed_events": 66,
+          "session": "2b644bb72e783301298053d5e0f1f854",
+          "ts": 1787701081881514800
+        }
+      ]
+    },
+    "readprep-daemon": {
+      "series": {
+        "blob_put": {
+          "count": 256,
+          "mean_us": 1386.7280859375,
+          "p50_us": 1306.892,
+          "p95_us": 1748.981,
+          "p99_us": 2390.884,
+          "min_us": 1135.686,
+          "max_us": 4615.366
+        },
+        "checkpoint.marshal": {
+          "count": 2,
+          "mean_us": 172.545,
+          "p50_us": 141.16,
+          "p95_us": 141.16,
+          "p99_us": 141.16,
+          "min_us": 141.16,
+          "max_us": 203.93
+        },
+        "checkpoint.upload": {
+          "count": 2,
+          "mean_us": 1579.903,
+          "p50_us": 1430.64,
+          "p95_us": 1430.64,
+          "p99_us": 1430.64,
+          "min_us": 1430.64,
+          "max_us": 1729.166
+        },
+        "commit.create.apply": {
+          "count": 4,
+          "mean_us": 3.31075,
+          "p50_us": 2.932,
+          "p95_us": 2.993,
+          "p99_us": 2.993,
+          "min_us": 2.454,
+          "max_us": 4.864
+        },
+        "commit.create.kafka_append": {
+          "count": 4,
+          "mean_us": 7067.457,
+          "p50_us": 6823.834,
+          "p95_us": 6932.719,
+          "p99_us": 6932.719,
+          "min_us": 6822.222,
+          "max_us": 7691.053
+        },
+        "commit.mkdir.apply": {
+          "count": 1,
+          "mean_us": 2.652,
+          "p50_us": 2.652,
+          "p95_us": 2.652,
+          "p99_us": 2.652,
+          "min_us": 2.652,
+          "max_us": 2.652
+        },
+        "commit.mkdir.kafka_append": {
+          "count": 1,
+          "mean_us": 7079.184,
+          "p50_us": 7079.184,
+          "p95_us": 7079.184,
+          "p99_us": 7079.184,
+          "min_us": 7079.184,
+          "max_us": 7079.184
+        },
+        "commit.rename.apply": {
+          "count": 4,
+          "mean_us": 6.571,
+          "p50_us": 6.328,
+          "p95_us": 6.773,
+          "p99_us": 6.773,
+          "min_us": 6.264,
+          "max_us": 6.919
+        },
+        "commit.rename.kafka_append": {
+          "count": 4,
+          "mean_us": 7042.54,
+          "p50_us": 7027.703,
+          "p95_us": 7083.211,
+          "p99_us": 7083.211,
+          "min_us": 6887.404,
+          "max_us": 7171.842
+        },
+        "commit.write.apply": {
+          "count": 256,
+          "mean_us": 11.1198125,
+          "p50_us": 9.678,
+          "p95_us": 17.48,
+          "p99_us": 36.475,
+          "min_us": 3.473,
+          "max_us": 147.466
+        },
+        "commit.write.kafka_append": {
+          "count": 256,
+          "mean_us": 7136.71856640625,
+          "p50_us": 7044.362,
+          "p95_us": 7447.902,
+          "p99_us": 8980.651,
+          "min_us": 6711.906,
+          "max_us": 12727.093
+        },
+        "fuse_getattr": {
+          "count": 2,
+          "mean_us": 8.9505,
+          "p50_us": 8.129,
+          "p95_us": 8.129,
+          "p99_us": 8.129,
+          "min_us": 8.129,
+          "max_us": 9.772
+        },
+        "fuse_lookup": {
+          "count": 17,
+          "mean_us": 7.041882352941177,
+          "p50_us": 7.65,
+          "p95_us": 13.66,
+          "p99_us": 13.66,
+          "min_us": 0.542,
+          "max_us": 16.617
+        },
+        "fuse_readdir": {
+          "count": 1,
+          "mean_us": 32.588,
+          "p50_us": 32.588,
+          "p95_us": 32.588,
+          "p99_us": 32.588,
+          "min_us": 32.588,
+          "max_us": 32.588
+        },
+        "fuse_write": {
+          "count": 256,
+          "mean_us": 8573.89959375,
+          "p50_us": 8413.782,
+          "p95_us": 9200.489,
+          "p99_us": 12561.244,
+          "min_us": 8009.631,
+          "max_us": 14544.374
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 79.295,
+          "p50_us": 79.295,
+          "p95_us": 79.295,
+          "p99_us": 79.295,
+          "min_us": 79.295,
+          "max_us": 79.295
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 987.424,
+          "p50_us": 987.424,
+          "p95_us": 987.424,
+          "p99_us": 987.424,
+          "min_us": 987.424,
+          "max_us": 987.424
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4005251.4,
+          "p50_us": 4005251.4,
+          "p95_us": 4005251.4,
+          "p99_us": 4005251.4,
+          "min_us": 4005251.4,
+          "max_us": 4005251.4
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 79295,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 987424,
+          "log_read_ns": 4005251400,
+          "replayed_events": 1,
+          "session": "2b644bb72e783301298053d5e0f1f854",
+          "ts": 1787701075036138200
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 15149,
+          "marshal_ns": 203930,
+          "offset": 511,
+          "session": "2b644bb72e783301298053d5e0f1f854",
+          "ts": 1787701076397282300,
+          "upload_ns": 1430640
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 30402,
+          "marshal_ns": 141160,
+          "offset": 611,
+          "session": "2b644bb72e783301298053d5e0f1f854",
+          "ts": 1787701077259122200,
+          "upload_ns": 1729166
+        }
+      ]
+    },
+    "resume-client": {
+      "series": {
+        "mount_wall{large-image-try1}": {
+          "count": 1,
+          "mean_us": 4537219.666,
+          "p50_us": 4537219.666,
+          "p95_us": 4537219.666,
+          "p99_us": 4537219.666,
+          "min_us": 4537219.666,
+          "max_us": 4537219.666
+        },
+        "mount_wall{large-image-try2}": {
+          "count": 1,
+          "mean_us": 4540530.3,
+          "p50_us": 4540530.3,
+          "p95_us": 4540530.3,
+          "p99_us": 4540530.3,
+          "min_us": 4540530.3,
+          "max_us": 4540530.3
+        },
+        "mount_wall{large-image-try3}": {
+          "count": 1,
+          "mean_us": 4544900.331,
+          "p50_us": 4544900.331,
+          "p95_us": 4544900.331,
+          "p99_us": 4544900.331,
+          "min_us": 4544900.331,
+          "max_us": 4544900.331
+        },
+        "mount_wall{small-noimage-try1}": {
+          "count": 1,
+          "mean_us": 4534876.682,
+          "p50_us": 4534876.682,
+          "p95_us": 4534876.682,
+          "p99_us": 4534876.682,
+          "min_us": 4534876.682,
+          "max_us": 4534876.682
+        },
+        "mount_wall{small-noimage-try2}": {
+          "count": 1,
+          "mean_us": 4534343.049,
+          "p50_us": 4534343.049,
+          "p95_us": 4534343.049,
+          "p99_us": 4534343.049,
+          "min_us": 4534343.049,
+          "max_us": 4534343.049
+        },
+        "mount_wall{small-noimage-try3}": {
+          "count": 1,
+          "mean_us": 4534348.372,
+          "p50_us": 4534348.372,
+          "p95_us": 4534348.372,
+          "p99_us": 4534348.372,
+          "min_us": 4534348.372,
+          "max_us": 4534348.372
+        }
+      }
+    },
+    "resume-daemon": {
+      "series": {
+        "resume.apply": {
+          "count": 6,
+          "mean_us": 957.6716666666666,
+          "p50_us": 184.795,
+          "p95_us": 1551.756,
+          "p99_us": 1551.756,
+          "min_us": 123.781,
+          "max_us": 2369.689
+        },
+        "resume.image_load": {
+          "count": 6,
+          "mean_us": 5276.096166666667,
+          "p50_us": 1016.577,
+          "p95_us": 8617.64,
+          "p99_us": 8617.64,
+          "min_us": 1003.347,
+          "max_us": 11860.472
+        },
+        "resume.log_read": {
+          "count": 6,
+          "mean_us": 4005031.535833333,
+          "p50_us": 4004892.812,
+          "p95_us": 4005499.732,
+          "p99_us": 4005499.732,
+          "min_us": 4003370.547,
+          "max_us": 4006556.604
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 184795,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 1005833,
+          "log_read_ns": 4005309578,
+          "replayed_events": 76,
+          "session": "6ceb4894e91d038a13610c72b9a243d3",
+          "ts": 1787701180067686400
+        },
+        {
+          "apply_ns": 123781,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 1003347,
+          "log_read_ns": 4004559942,
+          "replayed_events": 76,
+          "session": "6ceb4894e91d038a13610c72b9a243d3",
+          "ts": 1787701184588272000
+        },
+        {
+          "apply_ns": 148979,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 1016577,
+          "log_read_ns": 4003370547,
+          "replayed_events": 76,
+          "session": "6ceb4894e91d038a13610c72b9a243d3",
+          "ts": 1787701189132017200
+        },
+        {
+          "apply_ns": 1551756,
+          "ev": "resume",
+          "from_offset": 1801,
+          "had_image": true,
+          "image_load_ns": 8152708,
+          "log_read_ns": 4005499732,
+          "replayed_events": 19,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701193688439600
+        },
+        {
+          "apply_ns": 2369689,
+          "ev": "resume",
+          "from_offset": 1801,
+          "had_image": true,
+          "image_load_ns": 8617640,
+          "log_read_ns": 4004892812,
+          "replayed_events": 19,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701198235262700
+        },
+        {
+          "apply_ns": 1367030,
+          "ev": "resume",
+          "from_offset": 1801,
+          "had_image": true,
+          "image_load_ns": 11860472,
+          "log_read_ns": 4006556604,
+          "replayed_events": 19,
+          "session": "c27df4232027a044dcdf0d2221536e37",
+          "ts": 1787701202806549000
+        }
+      ]
+    },
+    "resumeprep-daemon": {
+      "series": {
+        "blob_put": {
+          "count": 50,
+          "mean_us": 1366.8546,
+          "p50_us": 1256.385,
+          "p95_us": 1620.625,
+          "p99_us": 1970.503,
+          "min_us": 1032.742,
+          "max_us": 4556.299
+        },
+        "commit.create.apply": {
+          "count": 25,
+          "mean_us": 3.5676,
+          "p50_us": 2.849,
+          "p95_us": 6.042,
+          "p99_us": 6.714,
+          "min_us": 2.337,
+          "max_us": 8.764
+        },
+        "commit.create.kafka_append": {
+          "count": 25,
+          "mean_us": 7099.30816,
+          "p50_us": 6970.498,
+          "p95_us": 7404.504,
+          "p99_us": 7910.622,
+          "min_us": 6749.294,
+          "max_us": 9279.959
+        },
+        "commit.write.apply": {
+          "count": 50,
+          "mean_us": 4.28026,
+          "p50_us": 3.987,
+          "p95_us": 6.536,
+          "p99_us": 6.646,
+          "min_us": 2.899,
+          "max_us": 8.419
+        },
+        "commit.write.kafka_append": {
+          "count": 50,
+          "mean_us": 6962.88444,
+          "p50_us": 6890.918,
+          "p95_us": 7193.628,
+          "p99_us": 7603.076,
+          "min_us": 6665.686,
+          "max_us": 8931.634
+        },
+        "fuse_lookup": {
+          "count": 25,
+          "mean_us": 9.49968,
+          "p50_us": 8.449,
+          "p95_us": 10.207,
+          "p99_us": 10.259,
+          "min_us": 7.047,
+          "max_us": 34.114
+        },
+        "fuse_write": {
+          "count": 50,
+          "mean_us": 8379.5333,
+          "p50_us": 8209.513,
+          "p95_us": 9013.337,
+          "p99_us": 10653.733,
+          "min_us": 7820.397,
+          "max_us": 11785.119
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 77.475,
+          "p50_us": 77.475,
+          "p95_us": 77.475,
+          "p99_us": 77.475,
+          "min_us": 77.475,
+          "max_us": 77.475
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 1004.938,
+          "p50_us": 1004.938,
+          "p95_us": 1004.938,
+          "p99_us": 1004.938,
+          "min_us": 1004.938,
+          "max_us": 1004.938
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4005553.302,
+          "p50_us": 4005553.302,
+          "p95_us": 4005553.302,
+          "p99_us": 4005553.302,
+          "min_us": 4005553.302,
+          "max_us": 4005553.302
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 77475,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 1004938,
+          "log_read_ns": 4005553302,
+          "replayed_events": 1,
+          "session": "6ceb4894e91d038a13610c72b9a243d3",
+          "ts": 1787701174892756000
+        }
+      ]
+    },
+    "throughput-client": {
+      "series": {
+        "client_write{writers=1}": {
+          "count": 936,
+          "mean_us": 8522.150825854702,
+          "p50_us": 8334.975,
+          "p95_us": 9108.598,
+          "p99_us": 12840.092,
+          "min_us": 7822.855,
+          "max_us": 19738.982
+        },
+        "client_write{writers=2}": {
+          "count": 1083,
+          "mean_us": 14744.237960295475,
+          "p50_us": 14473.867,
+          "p95_us": 16641.725,
+          "p99_us": 20291.121,
+          "min_us": 13491.808,
+          "max_us": 23531.025
+        },
+        "client_write{writers=4}": {
+          "count": 1087,
+          "mean_us": 29379.44254921803,
+          "p50_us": 28839.426,
+          "p95_us": 33444.755,
+          "p99_us": 37273.751,
+          "min_us": 14228.333,
+          "max_us": 40185.077
+        },
+        "client_write{writers=8}": {
+          "count": 1086,
+          "mean_us": 58505.15324033149,
+          "p50_us": 58108.782,
+          "p95_us": 63819.655,
+          "p99_us": 66233.934,
+          "min_us": 15137.683,
+          "max_us": 67269.022
+        }
+      },
+      "summaries": [
+        {
+          "elapsed_ns": 8003857542,
+          "ev": "throughput",
+          "events": 936,
+          "events_per_sec": 116.94,
+          "label": "writers=1",
+          "ts": 1787701099946450400,
+          "writers": 1
+        },
+        {
+          "elapsed_ns": 8009872846,
+          "ev": "throughput",
+          "events": 1083,
+          "events_per_sec": 135.21,
+          "label": "writers=2",
+          "ts": 1787701107958374100,
+          "writers": 2
+        },
+        {
+          "elapsed_ns": 8025662813,
+          "ev": "throughput",
+          "events": 1087,
+          "events_per_sec": 135.44,
+          "label": "writers=4",
+          "ts": 1787701115986429700,
+          "writers": 4
+        },
+        {
+          "elapsed_ns": 8053994163,
+          "ev": "throughput",
+          "events": 1086,
+          "events_per_sec": 134.84,
+          "label": "writers=8",
+          "ts": 1787701124042611700,
+          "writers": 8
+        }
+      ]
+    },
+    "throughput-daemon": {
+      "series": {
+        "blob_put": {
+          "count": 4192,
+          "mean_us": 1285.8674952290075,
+          "p50_us": 1241.097,
+          "p95_us": 1555.571,
+          "p99_us": 1879.316,
+          "min_us": 1041.833,
+          "max_us": 6715.068
+        },
+        "checkpoint.marshal": {
+          "count": 43,
+          "mean_us": 1702.7345348837212,
+          "p50_us": 1684.326,
+          "p95_us": 3261.494,
+          "p99_us": 3439.202,
+          "min_us": 114.78,
+          "max_us": 3565.93
+        },
+        "checkpoint.upload": {
+          "count": 43,
+          "mean_us": 2489.0778139534887,
+          "p50_us": 2392.05,
+          "p95_us": 3347.562,
+          "p99_us": 3776.042,
+          "min_us": 1394.149,
+          "max_us": 4081.059
+        },
+        "commit.create.apply": {
+          "count": 15,
+          "mean_us": 3.684266666666667,
+          "p50_us": 3.168,
+          "p95_us": 5.866,
+          "p99_us": 5.866,
+          "min_us": 2.435,
+          "max_us": 7.271
+        },
+        "commit.create.kafka_append": {
+          "count": 15,
+          "mean_us": 7325.776733333333,
+          "p50_us": 7205.146,
+          "p95_us": 7831.465,
+          "p99_us": 7831.465,
+          "min_us": 6802.792,
+          "max_us": 8820.615
+        },
+        "commit.write.apply": {
+          "count": 4192,
+          "mean_us": 29.13908253816794,
+          "p50_us": 19.651,
+          "p95_us": 61.816,
+          "p99_us": 246.515,
+          "min_us": 3.277,
+          "max_us": 1596.513
+        },
+        "commit.write.kafka_append": {
+          "count": 4192,
+          "mean_us": 7236.94054985687,
+          "p50_us": 7119.504,
+          "p95_us": 7823.981,
+          "p99_us": 10610.077,
+          "min_us": 6446.486,
+          "max_us": 18231.716
+        },
+        "fuse_lookup": {
+          "count": 15,
+          "mean_us": 11.658466666666667,
+          "p50_us": 11.587,
+          "p95_us": 12.669,
+          "p99_us": 12.669,
+          "min_us": 9.408,
+          "max_us": 17.685
+        },
+        "fuse_write": {
+          "count": 4192,
+          "mean_us": 28395.008791269083,
+          "p50_us": 28128.402,
+          "p95_us": 60297.949,
+          "p99_us": 64207.585,
+          "min_us": 7736.519,
+          "max_us": 67204.216
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 87.879,
+          "p50_us": 87.879,
+          "p95_us": 87.879,
+          "p99_us": 87.879,
+          "min_us": 87.879,
+          "max_us": 87.879
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 899.155,
+          "p50_us": 899.155,
+          "p95_us": 899.155,
+          "p99_us": 899.155,
+          "min_us": 899.155,
+          "max_us": 899.155
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4005660.963,
+          "p50_us": 4005660.963,
+          "p95_us": 4005660.963,
+          "p99_us": 4005660.963,
+          "min_us": 4005660.963,
+          "max_us": 4005660.963
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 87879,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 899155,
+          "log_read_ns": 4005660963,
+          "replayed_events": 1,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701091442286600
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 15231,
+          "marshal_ns": 188507,
+          "offset": 644,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701092800286500,
+          "upload_ns": 1394149
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 30631,
+          "marshal_ns": 114780,
+          "offset": 744,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701093652468200,
+          "upload_ns": 1541828
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 46085,
+          "marshal_ns": 175125,
+          "offset": 844,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701094510707200,
+          "upload_ns": 1587571
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 61585,
+          "marshal_ns": 180497,
+          "offset": 944,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701095368469200,
+          "upload_ns": 1659879
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 77085,
+          "marshal_ns": 484713,
+          "offset": 1044,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701096214913500,
+          "upload_ns": 1767183
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 92585,
+          "marshal_ns": 539643,
+          "offset": 1144,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701097067094000,
+          "upload_ns": 1887048
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 108085,
+          "marshal_ns": 358605,
+          "offset": 1244,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701097916749800,
+          "upload_ns": 1618455
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 123585,
+          "marshal_ns": 383935,
+          "offset": 1344,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701098777865500,
+          "upload_ns": 1987203
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 139085,
+          "marshal_ns": 694809,
+          "offset": 1444,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701099624003800,
+          "upload_ns": 2203899
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 154352,
+          "marshal_ns": 672779,
+          "offset": 1544,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701100404274000,
+          "upload_ns": 1679575
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 169752,
+          "marshal_ns": 918078,
+          "offset": 1644,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701101131923000,
+          "upload_ns": 2237694
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 185152,
+          "marshal_ns": 1166782,
+          "offset": 1744,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701101867452200,
+          "upload_ns": 2038096
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 200552,
+          "marshal_ns": 682332,
+          "offset": 1844,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701102604995800,
+          "upload_ns": 2072408
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 215952,
+          "marshal_ns": 669012,
+          "offset": 1944,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701103348193800,
+          "upload_ns": 2077000
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 231424,
+          "marshal_ns": 784054,
+          "offset": 2044,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701104088018000,
+          "upload_ns": 2135215
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 246924,
+          "marshal_ns": 1408352,
+          "offset": 2144,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701104831425300,
+          "upload_ns": 2106153
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 262424,
+          "marshal_ns": 1707947,
+          "offset": 2244,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701105569382700,
+          "upload_ns": 2187040
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 277924,
+          "marshal_ns": 1819132,
+          "offset": 2344,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701106310581500,
+          "upload_ns": 2144195
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 293424,
+          "marshal_ns": 1485684,
+          "offset": 2444,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701107049250800,
+          "upload_ns": 2298211
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 308924,
+          "marshal_ns": 1684326,
+          "offset": 2544,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701107792169200,
+          "upload_ns": 2353126
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 324026,
+          "marshal_ns": 1288976,
+          "offset": 2644,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701108532302600,
+          "upload_ns": 2392050
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 340327,
+          "marshal_ns": 1365884,
+          "offset": 2750,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701109308830000,
+          "upload_ns": 2314390
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 355727,
+          "marshal_ns": 2068252,
+          "offset": 2850,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701110042143000,
+          "upload_ns": 2442973
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 371127,
+          "marshal_ns": 2121714,
+          "offset": 2950,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701110776212700,
+          "upload_ns": 2537206
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 386527,
+          "marshal_ns": 1954065,
+          "offset": 3050,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701111508483300,
+          "upload_ns": 2496422
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 401927,
+          "marshal_ns": 1473694,
+          "offset": 3150,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701112242456000,
+          "upload_ns": 2582915
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 417327,
+          "marshal_ns": 1525618,
+          "offset": 3250,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701112977965000,
+          "upload_ns": 2646624
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 432727,
+          "marshal_ns": 1758803,
+          "offset": 3350,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701113713961200,
+          "upload_ns": 2834770
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 448127,
+          "marshal_ns": 2154998,
+          "offset": 3450,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701114449603300,
+          "upload_ns": 2622199
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 463530,
+          "marshal_ns": 2216500,
+          "offset": 3550,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701115184898000,
+          "upload_ns": 2688632
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 479030,
+          "marshal_ns": 2345727,
+          "offset": 3650,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701115933874400,
+          "upload_ns": 3032879
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 492940,
+          "marshal_ns": 2533657,
+          "offset": 3744,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701116620808000,
+          "upload_ns": 2889206
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 510388,
+          "marshal_ns": 2123163,
+          "offset": 3858,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701117461709300,
+          "upload_ns": 3091505
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 525782,
+          "marshal_ns": 3129339,
+          "offset": 3958,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701118192841700,
+          "upload_ns": 2895344
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 541182,
+          "marshal_ns": 2950331,
+          "offset": 4058,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701118927535400,
+          "upload_ns": 3062338
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 556582,
+          "marshal_ns": 3161019,
+          "offset": 4158,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701119660153900,
+          "upload_ns": 3111830
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 571982,
+          "marshal_ns": 3119642,
+          "offset": 4258,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701120400625000,
+          "upload_ns": 3218725
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 587382,
+          "marshal_ns": 2952585,
+          "offset": 4358,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701121137820700,
+          "upload_ns": 3330120
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 596160,
+          "marshal_ns": 3196779,
+          "offset": 4415,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701121558631000,
+          "upload_ns": 3347562
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 602782,
+          "marshal_ns": 3261494,
+          "offset": 4458,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701121881286000,
+          "upload_ns": 3472734
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 618182,
+          "marshal_ns": 3565930,
+          "offset": 4558,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701122617850400,
+          "upload_ns": 3186893
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 633582,
+          "marshal_ns": 3439202,
+          "offset": 4658,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701123361949700,
+          "upload_ns": 4081059
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 648058,
+          "marshal_ns": 3391121,
+          "offset": 4752,
+          "session": "ce7a67ef09a77bbad9a04dbb07730e35",
+          "ts": 1787701124049673700,
+          "upload_ns": 3776042
+        }
+      ]
+    },
+    "write4k-client": {
+      "series": {
+        "client_create{4k}": {
+          "count": 32,
+          "mean_us": 7356.2335625,
+          "p50_us": 7184.287,
+          "p95_us": 7644.516,
+          "p99_us": 8433.825,
+          "min_us": 6921.343,
+          "max_us": 10593.89
+        },
+        "client_write{4k}": {
+          "count": 512,
+          "mean_us": 8639.2536796875,
+          "p50_us": 8452.524,
+          "p95_us": 9842.986,
+          "p99_us": 12485.935,
+          "min_us": 7970.534,
+          "max_us": 17792.475
+        }
+      }
+    },
+    "write4k-daemon": {
+      "series": {
+        "blob_put": {
+          "count": 512,
+          "mean_us": 1295.6059140625,
+          "p50_us": 1236.925,
+          "p95_us": 1602.173,
+          "p99_us": 1851.59,
+          "min_us": 1029.447,
+          "max_us": 4688.979
+        },
+        "checkpoint.marshal": {
+          "count": 5,
+          "mean_us": 294.07800000000003,
+          "p50_us": 241.234,
+          "p95_us": 345.434,
+          "p99_us": 345.434,
+          "min_us": 218.803,
+          "max_us": 437.655
+        },
+        "checkpoint.upload": {
+          "count": 5,
+          "mean_us": 1912.9458,
+          "p50_us": 1773.739,
+          "p95_us": 2110.107,
+          "p99_us": 2110.107,
+          "min_us": 1448.19,
+          "max_us": 2527.975
+        },
+        "commit.create.apply": {
+          "count": 32,
+          "mean_us": 3.93053125,
+          "p50_us": 2.988,
+          "p95_us": 9.244,
+          "p99_us": 11.234,
+          "min_us": 2.395,
+          "max_us": 12.862
+        },
+        "commit.create.kafka_append": {
+          "count": 32,
+          "mean_us": 7166.80090625,
+          "p50_us": 6992.055,
+          "p95_us": 7481.528,
+          "p99_us": 8102.696,
+          "min_us": 6773.92,
+          "max_us": 10403.006
+        },
+        "commit.write.apply": {
+          "count": 512,
+          "mean_us": 7.664677734375,
+          "p50_us": 6.423,
+          "p95_us": 12.624,
+          "p99_us": 18.131,
+          "min_us": 3.054,
+          "max_us": 154.499
+        },
+        "commit.write.kafka_append": {
+          "count": 512,
+          "mean_us": 7204.7333203125,
+          "p50_us": 7066.028,
+          "p95_us": 7773.784,
+          "p99_us": 10810.028,
+          "min_us": 6687.811,
+          "max_us": 16036.847
+        },
+        "fuse_lookup": {
+          "count": 32,
+          "mean_us": 11.24228125,
+          "p50_us": 11.152,
+          "p95_us": 13.616,
+          "p99_us": 13.726,
+          "min_us": 8.385,
+          "max_us": 20.579
+        },
+        "fuse_write": {
+          "count": 512,
+          "mean_us": 8547.9860625,
+          "p50_us": 8360.24,
+          "p95_us": 9449.729,
+          "p99_us": 12347.877,
+          "min_us": 7890.986,
+          "max_us": 17307.953
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 116.961,
+          "p50_us": 116.961,
+          "p95_us": 116.961,
+          "p99_us": 116.961,
+          "min_us": 116.961,
+          "max_us": 116.961
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 917.6,
+          "p50_us": 917.6,
+          "p95_us": 917.6,
+          "p99_us": 917.6,
+          "min_us": 917.6,
+          "max_us": 917.6
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4004510.869,
+          "p50_us": 4004510.869,
+          "p95_us": 4004510.869,
+          "p99_us": 4004510.869,
+          "min_us": 4004510.869,
+          "max_us": 4004510.869
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 116961,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 917600,
+          "log_read_ns": 4004510869,
+          "replayed_events": 1,
+          "session": "709b260c0c19c1caea4765ca3a15e43c",
+          "ts": 1787701059827112200
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 14852,
+          "marshal_ns": 218803,
+          "offset": 99,
+          "session": "709b260c0c19c1caea4765ca3a15e43c",
+          "ts": 1787701061192795100,
+          "upload_ns": 1448190
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 29788,
+          "marshal_ns": 437655,
+          "offset": 199,
+          "session": "709b260c0c19c1caea4765ca3a15e43c",
+          "ts": 1787701062043241500,
+          "upload_ns": 2110107
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 44728,
+          "marshal_ns": 241234,
+          "offset": 299,
+          "session": "709b260c0c19c1caea4765ca3a15e43c",
+          "ts": 1787701062904221400,
+          "upload_ns": 1704718
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 59668,
+          "marshal_ns": 227264,
+          "offset": 399,
+          "session": "709b260c0c19c1caea4765ca3a15e43c",
+          "ts": 1787701063758557400,
+          "upload_ns": 1773739
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 74608,
+          "marshal_ns": 345434,
+          "offset": 499,
+          "session": "709b260c0c19c1caea4765ca3a15e43c",
+          "ts": 1787701064613642000,
+          "upload_ns": 2527975
+        }
+      ]
+    },
+    "write64k-client": {
+      "series": {
+        "client_create{64k}": {
+          "count": 16,
+          "mean_us": 7322.5486875,
+          "p50_us": 7187.432,
+          "p95_us": 7786.913,
+          "p99_us": 7786.913,
+          "min_us": 7007.098,
+          "max_us": 8410.684
+        },
+        "client_write{64k}": {
+          "count": 128,
+          "mean_us": 9721.675859375,
+          "p50_us": 9432.785,
+          "p95_us": 11070.184,
+          "p99_us": 13426.653,
+          "min_us": 8895.298,
+          "max_us": 16349.278
+        }
+      }
+    },
+    "write64k-daemon": {
+      "series": {
+        "blob_put": {
+          "count": 128,
+          "mean_us": 2071.685484375,
+          "p50_us": 1970.295,
+          "p95_us": 2512.536,
+          "p99_us": 3418.129,
+          "min_us": 1660.969,
+          "max_us": 5080.399
+        },
+        "checkpoint.marshal": {
+          "count": 1,
+          "mean_us": 219.012,
+          "p50_us": 219.012,
+          "p95_us": 219.012,
+          "p99_us": 219.012,
+          "min_us": 219.012,
+          "max_us": 219.012
+        },
+        "checkpoint.upload": {
+          "count": 1,
+          "mean_us": 1543.837,
+          "p50_us": 1543.837,
+          "p95_us": 1543.837,
+          "p99_us": 1543.837,
+          "min_us": 1543.837,
+          "max_us": 1543.837
+        },
+        "commit.create.apply": {
+          "count": 16,
+          "mean_us": 3.2005625,
+          "p50_us": 2.658,
+          "p95_us": 5.982,
+          "p99_us": 5.982,
+          "min_us": 2.357,
+          "max_us": 6.198
+        },
+        "commit.create.kafka_append": {
+          "count": 16,
+          "mean_us": 7167.17775,
+          "p50_us": 7050.924,
+          "p95_us": 7648.488,
+          "p99_us": 7648.488,
+          "min_us": 6865.126,
+          "max_us": 8125.603
+        },
+        "commit.write.apply": {
+          "count": 128,
+          "mean_us": 5.915484375,
+          "p50_us": 5.389,
+          "p95_us": 10.69,
+          "p99_us": 14.812,
+          "min_us": 3.167,
+          "max_us": 15.988
+        },
+        "commit.write.kafka_append": {
+          "count": 128,
+          "mean_us": 7242.090265625,
+          "p50_us": 7085.399,
+          "p95_us": 7533.495,
+          "p99_us": 9445.962,
+          "min_us": 6676.256,
+          "max_us": 12941.213
+        },
+        "fuse_lookup": {
+          "count": 16,
+          "mean_us": 9.074375,
+          "p50_us": 8.634,
+          "p95_us": 10.772,
+          "p99_us": 10.772,
+          "min_us": 7.73,
+          "max_us": 14.325
+        },
+        "fuse_write": {
+          "count": 128,
+          "mean_us": 9553.400609375,
+          "p50_us": 9328.949,
+          "p95_us": 10953.994,
+          "p99_us": 12546.461,
+          "min_us": 8804.664,
+          "max_us": 15046.554
+        },
+        "resume.apply": {
+          "count": 1,
+          "mean_us": 71.385,
+          "p50_us": 71.385,
+          "p95_us": 71.385,
+          "p99_us": 71.385,
+          "min_us": 71.385,
+          "max_us": 71.385
+        },
+        "resume.image_load": {
+          "count": 1,
+          "mean_us": 1045.143,
+          "p50_us": 1045.143,
+          "p95_us": 1045.143,
+          "p99_us": 1045.143,
+          "min_us": 1045.143,
+          "max_us": 1045.143
+        },
+        "resume.log_read": {
+          "count": 1,
+          "mean_us": 4012862.117,
+          "p50_us": 4012862.117,
+          "p95_us": 4012862.117,
+          "p99_us": 4012862.117,
+          "min_us": 4012862.117,
+          "max_us": 4012862.117
+        }
+      },
+      "summaries": [
+        {
+          "apply_ns": 71385,
+          "ev": "resume",
+          "from_offset": 0,
+          "had_image": false,
+          "image_load_ns": 1045143,
+          "log_read_ns": 4012862117,
+          "replayed_events": 1,
+          "session": "8e7229927b28461d725408ac60c16754",
+          "ts": 1787701069091400700
+        },
+        {
+          "ev": "checkpoint",
+          "image_bytes": 14746,
+          "marshal_ns": 219012,
+          "offset": 4055,
+          "session": "8e7229927b28461d725408ac60c16754",
+          "ts": 1787701070536365000,
+          "upload_ns": 1543837
+        }
+      ]
+    }
+  },
+  "unit_note": "latency series in microseconds; *_ns fields in summaries are nanoseconds"
+}

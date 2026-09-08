@@ -1,0 +1,14 @@
+# Runtime-only image used by GoReleaser (.goreleaser.yaml `dockers_v2:`). The
+# build context is GoReleaser's temp dir with prebuilt binaries laid out as
+# <os>/<arch>/kfuse. Keep the runtime stage in sync with Dockerfile.
+FROM debian:bookworm-slim
+ARG TARGETPLATFORM
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends fuse3 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY $TARGETPLATFORM/kfuse /usr/local/bin/kfuse
+RUN mkdir -p /work/lower /var/lib/kfuse
+WORKDIR /work/lower
+ENV KF_STATE_DIR=/var/lib/kfuse
+ENTRYPOINT ["/usr/local/bin/kfuse"]
+CMD ["--help"]
