@@ -12,13 +12,13 @@ required.
 
 ## Credentials
 
-`kfuse_e2b.load_env()` accepts canonical `KF_*`/`AWS_*` names or the short
-aliases `BOOTSTRAP_SERVER`, `CONFLUENT_CLOUD_KEY`, `CONFLUENT_CLOUD_SECRET`,
-`REGION`, `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `BUCKET`, plus `E2B_API_KEY`.
-All of these are stored secrets, so the scripts run with no manual mapping. A
-name the scripts do not recognise surfaces as
-`missing required environment variables: KF_KAFKA_BROKERS` (or the equivalent
-for the other variables) rather than as a connection failure.
+`kfuse_e2b.load_env()` requires `BOOTSTRAP_SERVER`, `S3_ACCESS_KEY`,
+`S3_SECRET_KEY`, `S3_BUCKET`, and `E2B_KEY`; the hosted E2B examples also use
+`KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD`, and `S3_REGION`. All of these are
+stored secrets, so the scripts run
+with no manual mapping. A missing name surfaces as
+`missing required environment variables: BOOTSTRAP_SERVER` (or the equivalent
+for another variable) rather than as a connection failure.
 
 ## Recording in a GUI terminal
 
@@ -60,7 +60,7 @@ from main import PersistentSandbox
 
 creds = load_env()
 c = PersistentSandbox(sandbox_env(creds, blob_prefix()),
-                      build_kfuse_binary(), creds["E2B_API_KEY"], Console())
+                      build_kfuse_binary(), creds["E2B_KEY"], Console())
 try:
     c.execute("printf 'lease survives\\n' > lease.txt")
     c.checkpoint()
@@ -106,13 +106,14 @@ mount succeeded — a fresh session would also "mount successfully".
 Always finish with, and include the output of:
 
 ```sh
-uv run python -c "from e2b import Sandbox; print(Sandbox.list().next_items())"
+uv run python -c "import os; from e2b import Sandbox; print(Sandbox.list(api_key=os.environ['E2B_KEY']).next_items())"
 ```
 
 `Sandbox.list()` returns a paginator — it is not iterable; call `next_items()`.
 
 ## Devin Secrets Needed
 
-`E2B_API_KEY`, `BOOTSTRAP_SERVER`, `CONFLUENT_CLOUD_KEY`,
-`CONFLUENT_CLOUD_SECRET`, `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `REGION`, `BUCKET`.
-A Confluent *Kafka* API key is required (an org key fails with SASL error 58).
+`E2B_KEY`, `BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`,
+`KAFKA_SASL_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION`, `S3_BUCKET`.
+A Confluent *Kafka* API key is required for the hosted path (an org key fails
+with SASL error 58).

@@ -8,6 +8,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,18 +17,19 @@ import (
 
 type Config struct {
 	KafkaBrokers      string
-	KafkaSASLUser     string
+	KafkaSASLUsername string
 	KafkaSASLPassword string
 	KafkaTLS          bool
 	KafkaTopic        string
 	KafkaPartitions   int
 
-	AWSRegion    string
-	AWSAccessKey string
-	AWSSecretKey string
-
-	BlobBucket string
-	BlobPrefix string
+	S3Region       string
+	S3AccessKey    string
+	S3SecretKey    string
+	S3Endpoint     string
+	S3UsePathStyle bool
+	S3Bucket       string
+	S3Prefix       string
 
 	LowerID  string
 	StateDir string
@@ -55,17 +57,19 @@ func FromEnv() (Config, error) {
 func (cfg Config) Validate() error {
 	var missing []string
 	if cfg.KafkaBrokers == "" {
-		missing = append(missing, "KF_KAFKA_BROKERS")
+		missing = append(missing, "BOOTSTRAP_SERVER")
 	}
-	if cfg.KafkaSASLUser == "" {
-		missing = append(missing, "KF_KAFKA_SASL_USERNAME")
+	// Kafka can run without authentication locally, but a half-configured SASL
+	// pair is always a mistake.
+	if cfg.KafkaSASLUsername == "" && cfg.KafkaSASLPassword != "" {
+		missing = append(missing, "KAFKA_SASL_USERNAME")
 	}
-	if cfg.KafkaSASLPassword == "" {
-		missing = append(missing, "KF_KAFKA_SASL_PASSWORD")
+	if cfg.KafkaSASLPassword == "" && cfg.KafkaSASLUsername != "" {
+		missing = append(missing, "KAFKA_SASL_PASSWORD")
 	}
 	missing = append(missing, cfg.missingStorage()...)
 	if cfg.KafkaPartitions <= 0 {
-		missing = append(missing, "KF_KAFKA_PARTITIONS (>0)")
+		missing = append(missing, "KAFKA_PARTITIONS (>0)")
 	}
 	return missingErr(missing)
 }
@@ -78,14 +82,14 @@ func (cfg Config) ValidateStorage() error {
 
 func (cfg Config) missingStorage() []string {
 	var missing []string
-	if cfg.AWSAccessKey == "" {
-		missing = append(missing, "AWS_ACCESS_KEY_ID")
+	if cfg.S3AccessKey == "" {
+		missing = append(missing, "S3_ACCESS_KEY")
 	}
-	if cfg.AWSSecretKey == "" {
-		missing = append(missing, "AWS_SECRET_ACCESS_KEY")
+	if cfg.S3SecretKey == "" {
+		missing = append(missing, "S3_SECRET_KEY")
 	}
-	if cfg.BlobBucket == "" {
-		missing = append(missing, "KF_BLOB_BUCKET")
+	if cfg.S3Bucket == "" {
+		missing = append(missing, "S3_BUCKET")
 	}
 	return missing
 }
@@ -97,38 +101,48 @@ func missingErr(missing []string) error {
 	return fmt.Errorf("config: missing required env: %s", strings.Join(missing, ", "))
 }
 
-// Load reads the environment without requiring any cloud variable to be set.
-// Malformed values (a non-boolean KF_KAFKA_TLS, a non-integer partition count,
-// an invalid KF_LOWER_ID) and an unresolvable state dir are still errors: the
-// local fields must be trustworthy for every command. Callers that talk to
-// Kafka or S3 must additionally call Validate or ValidateStorage.
+// Load reads the environment without requiring any remote variable to be set.
+// Malformed values (a non-boolean KAFKA_TLS or S3_PATH_STYLE, a non-integer
+// partition count, an invalid KF_LOWER_ID) and an unresolvable state dir are
+// still errors: the local fields must be trustworthy for every command.
+// Callers that talk to Kafka or S3 must additionally call Validate or
+// ValidateStorage.
 func Load() (Config, error) {
 	var errs []error
 	// A malformed value is never defaulted away: a mistyped partition count
 	// would silently route a session's events to a different partition than
 	// the replay path reads from.
-	kafkaTLS, err := envBool("KF_KAFKA_TLS", true)
+	kafkaTLS, err := envBool("KAFKA_TLS", true)
 	if err != nil {
 		errs = append(errs, err)
 	}
-	kafkaPartitions, err := envInt("KF_KAFKA_PARTITIONS", defaultPartitions)
+	kafkaPartitions, err := envInt("KAFKA_PARTITIONS", defaultPartitions)
 	if err != nil {
+		errs = append(errs, err)
+	}
+	s3UsePathStyle, err := envBool("S3_PATH_STYLE", false)
+	if err != nil {
+		errs = append(errs, err)
+	}
+	s3Endpoint := strings.TrimRight(os.Getenv("S3_ENDPOINT"), "/")
+	if err := validateS3Endpoint(s3Endpoint); err != nil {
 		errs = append(errs, err)
 	}
 	cfg := Config{
-		KafkaBrokers:      os.Getenv("KF_KAFKA_BROKERS"),
-		KafkaSASLUser:     os.Getenv("KF_KAFKA_SASL_USERNAME"),
-		KafkaSASLPassword: os.Getenv("KF_KAFKA_SASL_PASSWORD"),
+		KafkaBrokers:      os.Getenv("BOOTSTRAP_SERVER"),
+		KafkaSASLUsername: os.Getenv("KAFKA_SASL_USERNAME"),
+		KafkaSASLPassword: os.Getenv("KAFKA_SASL_PASSWORD"),
 		KafkaTLS:          kafkaTLS,
-		KafkaTopic:        envOr("KF_KAFKA_TOPIC", defaultTopic),
+		KafkaTopic:        envOr("KAFKA_TOPIC", defaultTopic),
 		KafkaPartitions:   kafkaPartitions,
 
-		AWSRegion:    envOr("AWS_REGION", defaultRegion),
-		AWSAccessKey: os.Getenv("AWS_ACCESS_KEY_ID"),
-		AWSSecretKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-
-		BlobBucket: os.Getenv("KF_BLOB_BUCKET"),
-		BlobPrefix: envOr("KF_BLOB_PREFIX", defaultPrefix),
+		S3Region:       envOr("S3_REGION", defaultRegion),
+		S3AccessKey:    os.Getenv("S3_ACCESS_KEY"),
+		S3SecretKey:    os.Getenv("S3_SECRET_KEY"),
+		S3Endpoint:     s3Endpoint,
+		S3UsePathStyle: s3UsePathStyle,
+		S3Bucket:       os.Getenv("S3_BUCKET"),
+		S3Prefix:       envOr("S3_PREFIX", defaultPrefix),
 
 		LowerID: os.Getenv("KF_LOWER_ID"),
 	}
@@ -148,6 +162,20 @@ func Load() (Config, error) {
 		return cfg, errors.Join(errs...)
 	}
 	return cfg, nil
+}
+
+// validateS3Endpoint accepts a direct S3-compatible endpoint such as MinIO.
+// AWS's default endpoint remains implicit so the hosted path needs no extra
+// setting.
+func validateS3Endpoint(raw string) error {
+	if raw == "" {
+		return nil
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+		return fmt.Errorf("config: S3_ENDPOINT=%q must be an http:// or https:// URL", raw)
+	}
+	return nil
 }
 
 // stateDirFromEnv resolves the local state directory. An unresolvable home

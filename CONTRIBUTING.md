@@ -66,20 +66,24 @@ v0.x.y`. `.github/workflows/release.yml` runs GoReleaser, which builds
 ### Integration tests
 
 Integration tests are behind `//go:build integration`. They read the repo-root
-`.env` (copy `.env.example`) — `.env` is the only credentials file kfuse looks
-for, and it is gitignored. Never commit credentials under any other name.
+`.env` (copy `.env.example`) or already-exported environment variables; exported
+values win. `.env` is gitignored. Never commit credentials under any other name.
 
 Required values (the same names CI takes from repository secrets):
 
 | Variable | Where it comes from |
 | --- | --- |
-| `KF_KAFKA_BROKERS` | Confluent Cloud cluster → Cluster settings → bootstrap server (`pkc-….confluent.cloud:9092`) |
-| `KF_KAFKA_SASL_USERNAME` / `KF_KAFKA_SASL_PASSWORD` | Confluent Cloud **cluster-level** Kafka API key (Cluster → API keys). A Global/org key fails SASL with `[58]` |
-| `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | An IAM user or role with read/write on the bucket prefix below |
-| `KF_BLOB_BUCKET` | An S3 bucket you own; tests write under the `kfuse/test/…` prefix and need `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject`, and `s3:ListBucket` on it |
+| `BOOTSTRAP_SERVER` | A Kafka bootstrap address; for Confluent Cloud, Cluster settings → bootstrap server (`pkc-….confluent.cloud:9092`) |
+| `KAFKA_SASL_USERNAME` / `KAFKA_SASL_PASSWORD` | Optional as a pair; for Confluent Cloud use a **cluster-level** Kafka API key (Cluster → API keys). A Global/org key fails SASL with `[58]` |
+| `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET` | An S3-compatible bucket and credentials; tests write under a `kfuse/test/…` prefix |
+| `S3_REGION` | Optional region override (`us-east-1` is the default) |
+| `S3_ENDPOINT`, `S3_PATH_STYLE` | Optional for MinIO or another S3-compatible endpoint |
 
-`KF_KAFKA_TLS=true` and `KF_KAFKA_TOPIC=kfuse.events` are the defaults the tests
-and demos assume; the topic is created with 8 partitions if it does not exist.
+`KAFKA_TLS=true` and `KAFKA_TOPIC=kfuse.events` are the defaults the hosted
+tests and demos assume; the topic is created with 8 partitions if it does not
+exist. For a credential-free local run, `make local-up` starts Apache Kafka in
+single-node KRaft mode plus MinIO; `set -a; . examples/local/local.env; set +a`
+loads the local values.
 
 ## Demos
 

@@ -1,4 +1,4 @@
-.PHONY: all build test test-race test-fuse integration-test vet lint fmt fmt-check probe docker-build release-snapshot clean
+.PHONY: all build test test-race test-fuse integration-test local-up local-demo local-down vet lint fmt fmt-check probe docker-build release-snapshot clean
 
 BIN := kfuse
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
@@ -32,9 +32,20 @@ test-race:
 test-fuse:
 	KFUSE_REQUIRE_FUSE=1 go test -race -count=1 -run 'RealMount' ./internal/daemon/
 
-# Integration tests: need a repo-root .env with real Confluent + AWS creds.
+# Integration tests: need a repo-root .env with a reachable Kafka broker and
+# S3-compatible bucket (hosted or examples/local).
 integration-test:
 	go test -tags integration ./...
+
+# Local development stack: Apache Kafka in single-node KRaft mode + MinIO.
+local-up:
+	./examples/local/up.sh
+
+local-demo:
+	./examples/local/demo.sh
+
+local-down:
+	./examples/local/down.sh
 
 vet:
 	go vet ./...
@@ -48,7 +59,7 @@ fmt:
 fmt-check:
 	@out=$$(gofmt -l .); if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi
 
-# Cheapest end-to-end check: read-side FUSE probe, no Kafka or S3.
+# Cheapest end-to-end check: FUSE + S3 probe, no Kafka append.
 probe:
 	./examples/functional-demo/run.sh --probe
 

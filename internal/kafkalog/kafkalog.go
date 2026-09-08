@@ -50,8 +50,9 @@ const (
 	fetchTimeout = 30 * time.Second
 )
 
-// kafkaVersion is the protocol version negotiated with the brokers; Confluent
-// Cloud runs a newer broker and speaks every older protocol.
+// kafkaVersion is the protocol version negotiated with the brokers. Modern
+// Kafka-compatible services speak this version, including hosted and local
+// deployments.
 var kafkaVersion = sarama.V2_8_0_0
 
 type Log struct {
@@ -75,10 +76,10 @@ func New(cfg config.Config) (*Log, error) {
 	sc.ClientID = "kfuse"
 	sc.Net.DialTimeout = dialTimeout
 	sc.Net.KeepAlive = keepAliveTimeout
-	if cfg.KafkaSASLUser != "" {
+	if cfg.KafkaSASLUsername != "" {
 		sc.Net.SASL.Enable = true
 		sc.Net.SASL.Mechanism = sarama.SASLTypePlaintext
-		sc.Net.SASL.User = cfg.KafkaSASLUser
+		sc.Net.SASL.User = cfg.KafkaSASLUsername
 		sc.Net.SASL.Password = cfg.KafkaSASLPassword
 	}
 	if cfg.KafkaTLS {
@@ -211,7 +212,7 @@ func (l *Log) EnsureTopic(ctx context.Context) error {
 		defer func() { _ = admin.Close() }()
 		return struct{}{}, admin.CreateTopic(l.topic, &sarama.TopicDetail{
 			NumPartitions:     int32(l.partitions),
-			ReplicationFactor: -1, // broker default; required on Confluent Cloud
+			ReplicationFactor: -1, // broker default
 		}, false)
 	})
 	switch {

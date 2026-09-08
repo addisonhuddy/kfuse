@@ -23,15 +23,24 @@ _STATUS_SESSION_RE = re.compile(r"mounted: session ([A-Za-z0-9._-]+) pid \d+")
 _LEASE_FAILURE_RE = re.compile(r"(?:no live mount|lease|session locked)", re.IGNORECASE)
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$", re.MULTILINE)
 
-_CANONICAL_ALIASES = {
-    "KF_KAFKA_BROKERS": "BOOTSTRAP_SERVER",
-    "KF_KAFKA_SASL_USERNAME": "CONFLUENT_CLOUD_KEY",
-    "KF_KAFKA_SASL_PASSWORD": "CONFLUENT_CLOUD_SECRET",
-    "AWS_REGION": "REGION",
-    "AWS_ACCESS_KEY_ID": "AWS_ACCESS_KEY",
-    "AWS_SECRET_ACCESS_KEY": "AWS_SECRET_KEY",
-    "KF_BLOB_BUCKET": "BUCKET",
-}
+_REQUIRED_CLOUD_ENV = (
+    "BOOTSTRAP_SERVER",
+    "S3_ACCESS_KEY",
+    "S3_SECRET_KEY",
+    "S3_BUCKET",
+)
+_OPTIONAL_CLOUD_ENV = (
+    "KAFKA_SASL_USERNAME",
+    "KAFKA_SASL_PASSWORD",
+    "KAFKA_TLS",
+    "KAFKA_TOPIC",
+    "KAFKA_PARTITIONS",
+    "S3_REGION",
+    "S3_ENDPOINT",
+    "S3_PATH_STYLE",
+)
+_CLOUD_ENV = _REQUIRED_CLOUD_ENV + _OPTIONAL_CLOUD_ENV
+_E2B_ENV = "E2B_KEY"
 
 
 def _read_env_file(path: Path) -> dict[str, str]:
@@ -54,26 +63,23 @@ def _read_env_file(path: Path) -> dict[str, str]:
 
 
 def load_env(creds: Path | None = None) -> dict[str, str]:
-    """Load credentials, accepting the names used by the other examples."""
+    """Load credentials using the canonical names shared by all examples."""
 
     repo_root = Path(__file__).resolve().parents[2]
     env_file = repo_root / ".env" if creds is None else creds
     values = _read_env_file(env_file)
     values.update({key: value for key, value in os.environ.items() if value})
 
-    resolved: dict[str, str] = {}
-    for canonical, alias in _CANONICAL_ALIASES.items():
-        for key in (canonical, alias):
-            if values.get(key, ""):
-                resolved[canonical] = values[key]
-                break
-    if values.get("E2B_API_KEY", ""):
-        resolved["E2B_API_KEY"] = values["E2B_API_KEY"]
-    if values.get("KF_KAFKA_TOPIC", ""):
-        resolved["KF_KAFKA_TOPIC"] = values["KF_KAFKA_TOPIC"]
+    resolved = {key: values[key] for key in _CLOUD_ENV if values.get(key, "")}
+    if values.get(_E2B_ENV, ""):
+        resolved[_E2B_ENV] = values[_E2B_ENV]
 
-    required = [*_CANONICAL_ALIASES, "E2B_API_KEY"]
+    required = [*_REQUIRED_CLOUD_ENV, _E2B_ENV]
     missing = [key for key in required if not resolved.get(key)]
+    if bool(resolved.get("KAFKA_SASL_USERNAME")) != bool(
+        resolved.get("KAFKA_SASL_PASSWORD")
+    ):
+        missing.append("KAFKA_SASL_USERNAME/KAFKA_SASL_PASSWORD pair")
     if missing:
         raise SystemExit(
             "missing required environment variables: " + ", ".join(missing)
@@ -84,13 +90,17 @@ def load_env(creds: Path | None = None) -> dict[str, str]:
 def sandbox_env(creds_values: dict[str, str], blob_prefix: str) -> dict[str, str]:
     """Return only the kfuse settings that are safe to pass into a sandbox."""
 
-    env = {key: creds_values[key] for key in _CANONICAL_ALIASES}
+    env = {
+        key: creds_values[key]
+        for key in _CLOUD_ENV
+        if key in creds_values
+    }
     env.update(
         {
-            "KF_KAFKA_TLS": "true",
-            "KF_KAFKA_TOPIC": creds_values.get("KF_KAFKA_TOPIC", "kfuse.events"),
-            "KF_KAFKA_PARTITIONS": "8",
-            "KF_BLOB_PREFIX": blob_prefix,
+            "KAFKA_TLS": creds_values.get("KAFKA_TLS", "true"),
+            "KAFKA_TOPIC": creds_values.get("KAFKA_TOPIC", "kfuse.events"),
+            "KAFKA_PARTITIONS": creds_values.get("KAFKA_PARTITIONS", "8"),
+            "S3_PREFIX": blob_prefix,
             "KF_LOWER_ID": LOWER_ID,
             "KF_STATE_DIR": "/home/user/.kfuse",
         }

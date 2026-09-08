@@ -8,13 +8,13 @@ It runs in any Linux sandbox with `/dev/fuse`. The demos use Docker.
 
 Every example loads the repo-root `.env` automatically; pass
 `--creds <file>` to use another file. Already-exported environment values win.
-Both canonical names and the short aliases (`BOOTSTRAP_SERVER`,
-`CONFLUENT_CLOUD_KEY`, `CONFLUENT_CLOUD_SECRET`, `REGION`, `AWS_ACCESS_KEY`,
-`AWS_SECRET_KEY`, `BUCKET`) are accepted.
+Use `BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD`,
+`S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_BUCKET`.
 
 | Demo | What it shows | Pass line |
 |---|---|---|
 | [`functional-demo`](functional-demo/README.md) | POSIX walkthrough: create, write, dirs, symlinks, attrs, rename, sparse CoW, resume, branch, checkpoint | `DEMO PASS (42/42 steps)` |
+| [`local`](local/README.md) | Same walkthrough against local Apache Kafka KRaft + MinIO | `DEMO PASS (42/42 steps)` |
 | [`best-of-n`](best-of-n/README.md) | Dirty workspace → checkpoint → 3 parallel hypothesis sandboxes → judge | `BEST-OF-N PASS` |
 | [`e2b-sandbox`](e2b-sandbox/README.md) | Durable kfuse sessions across disposable E2B sandboxes and parallel branches | `E2B DEMO PASS` / `E2B BRANCH DEMO PASS` |
 

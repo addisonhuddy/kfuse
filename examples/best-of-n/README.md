@@ -38,8 +38,8 @@ untouched.
 
 Same as `functional-demo`: hosted Confluent Cloud + AWS S3. The repo-root
 `.env` loads automatically; pass another file with `--creds <file>`.
-Already-exported environment values win. Short names (`BOOTSTRAP_SERVER`,
-`CONFLUENT_CLOUD_KEY`, `CONFLUENT_CLOUD_SECRET`, `REGION`, `AWS_ACCESS_KEY`,
-`AWS_SECRET_KEY`, `BUCKET`) and canonical names (`KF_*`, `AWS_*`) both work.
+Already-exported environment values win. Use `BOOTSTRAP_SERVER`,
+`KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD`, `S3_REGION`, `S3_ACCESS_KEY`,
+`S3_SECRET_KEY`, and `S3_BUCKET`.
 
 Use a Confluent **Kafka API key**, not a Global/org key.

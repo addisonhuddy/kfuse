@@ -14,24 +14,21 @@ moves the session to a fresh sandbox).
 
 ## Credentials
 
-`uv run` reads the repo-root `.env` when it exists. Canonical names are:
+`uv run` reads the repo-root `.env` when it exists. Required names are:
 
 ```
-KF_KAFKA_BROKERS=...
-KF_KAFKA_SASL_USERNAME=...
-KF_KAFKA_SASL_PASSWORD=...
-AWS_REGION=...
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-KF_BLOB_BUCKET=...
-E2B_API_KEY=...
+BOOTSTRAP_SERVER=...
+KAFKA_SASL_USERNAME=...
+KAFKA_SASL_PASSWORD=...
+S3_REGION=...
+S3_ACCESS_KEY=...
+S3_SECRET_KEY=...
+S3_BUCKET=...
+E2B_KEY=...
 ```
 
-The short names accepted by the other examples are also supported:
-`BOOTSTRAP_SERVER`, `CONFLUENT_CLOUD_KEY`, `CONFLUENT_CLOUD_SECRET`, `REGION`,
-`AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, and `BUCKET`. A Confluent Kafka API key is
-required, rather than an organization key. `E2B_API_KEY` is used only by the
-control process and is never sent into a sandbox.
+A Confluent Kafka API key is required, rather than an organization key.
+`E2B_KEY` is used only by the control process and is never sent into a sandbox.
 
 ## Run
 
@@ -42,7 +39,7 @@ uv run main.py
 uv run main.py --repl
 ```
 
-Each run generates one unique `KF_BLOB_PREFIX`, shared by the sandboxes in
+Each run generates one unique `S3_PREFIX`, shared by the sandboxes in
 that run. The Linux kfuse binary is uploaded to each default E2B sandbox at
 runtime, and the lower directory is prepared before the first mount. The
 default E2B base template already includes FUSE support, so no custom template
@@ -70,7 +67,7 @@ their shared lower directory across disposable sandboxes.
 
 | Symptom | Fix |
 |---|---|
-| `missing required environment variables` | Fill the canonical or short names above, including `E2B_API_KEY`. |
+| `missing required environment variables` | Fill every name above, including `E2B_KEY`. |
 | SASL error `[58]` | Use a Confluent Kafka API key, not an organization key. |
 | `kfuse mount ... child failed to start` with `session locked: held by <host>` | The examples retry resumed mounts after waiting 47 seconds for the old writer lease. `kfuse umount` waits for the daemon to exit and release the lease before returning. |
 | `umount: daemon pid <pid> still running after 30s` | Something (a shell or process cwd, an open file) is inside `/home/user/work`, so `fusermount` gets `Device or resource busy`. Run `kfuse umount` from outside the mountpoint; the examples always do. |

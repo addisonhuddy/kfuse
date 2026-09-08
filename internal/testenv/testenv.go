@@ -4,13 +4,15 @@
 //go:build integration
 
 // Package testenv boots integration-test configuration from the .env file at
-// the repo root (gitignored). Never commit real credentials.
+// the repo root (gitignored) or from the process environment. Never commit real
+// credentials.
 package testenv
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -41,55 +43,82 @@ func findEnvFile() (string, error) {
 // Config returns a Config for integration tests. prefix is the S3 key prefix
 // namespace for this test run, e.g. "test/<runid>/".
 func Config(prefix string) (config.Config, error) {
-	p, err := findEnvFile()
-	if err != nil {
-		return config.Config{}, err
-	}
-	raw, err := os.ReadFile(p)
-	if err != nil {
-		return config.Config{}, err
-	}
 	env := map[string]string{}
-	for _, line := range strings.Split(string(raw), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
+	p := "process environment"
+	if found, err := findEnvFile(); err == nil {
+		p = found
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			return config.Config{}, err
 		}
-		k, v, ok := strings.Cut(line, "=")
-		if !ok {
-			continue
+		for _, line := range strings.Split(string(raw), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+			k, v, ok := strings.Cut(line, "=")
+			if !ok {
+				continue
+			}
+			env[strings.TrimSpace(k)] = strings.TrimSpace(v)
 		}
-		env[strings.TrimSpace(k)] = strings.TrimSpace(v)
+	}
+	for _, kv := range os.Environ() {
+		k, v, ok := strings.Cut(kv, "=")
+		if ok {
+			env[k] = v
+		}
+	}
+	var err error
+	kafkaTLS := true
+	if v := env["KAFKA_TLS"]; v != "" {
+		kafkaTLS, err = strconv.ParseBool(v)
+		if err != nil {
+			return config.Config{}, fmt.Errorf("%s KAFKA_TLS=%q is not a boolean", p, v)
+		}
+	}
+	kafkaPartitions := 8
+	if v := env["KAFKA_PARTITIONS"]; v != "" {
+		kafkaPartitions, err = strconv.Atoi(v)
+		if err != nil {
+			return config.Config{}, fmt.Errorf("%s KAFKA_PARTITIONS=%q is not an integer", p, v)
+		}
+	}
+	s3UsePathStyle := false
+	if v := env["S3_PATH_STYLE"]; v != "" {
+		s3UsePathStyle, err = strconv.ParseBool(v)
+		if err != nil {
+			return config.Config{}, fmt.Errorf("%s S3_PATH_STYLE=%q is not a boolean", p, v)
+		}
+	}
+	kafkaTopic := env["KAFKA_TOPIC"]
+	if kafkaTopic == "" {
+		kafkaTopic = "kfuse.events"
+	}
+	s3Region := env["S3_REGION"]
+	if s3Region == "" {
+		s3Region = "us-east-1"
 	}
 	cfg := config.Config{
-		KafkaBrokers:      first(env["BOOTSTRAP_SERVER"], env["KF_KAFKA_BROKERS"]),
-		KafkaSASLUser:     first(env["CONFLUENT_CLOUD_KEY"], env["CONFLUENT_CLOUD"], env["KF_KAFKA_SASL_USERNAME"]),
-		KafkaSASLPassword: first(env["CONFLUENT_CLOUD_SECRET"], env["KF_KAFKA_SASL_PASSWORD"]),
-		KafkaTLS:          true,
-		KafkaTopic:        "kfuse.events",
-		KafkaPartitions:   8,
+		KafkaBrokers:      env["BOOTSTRAP_SERVER"],
+		KafkaSASLUsername: env["KAFKA_SASL_USERNAME"],
+		KafkaSASLPassword: env["KAFKA_SASL_PASSWORD"],
+		KafkaTLS:          kafkaTLS,
+		KafkaTopic:        kafkaTopic,
+		KafkaPartitions:   kafkaPartitions,
 
-		AWSRegion:    first(env["REGION"], env["AWS_REGION"]),
-		AWSAccessKey: first(env["AWS_ACCESS_KEY"], env["AWS_ACCESS_KEY_ID"]),
-		AWSSecretKey: first(env["AWS_SECRET_KEY"], env["AWS_SECRET_ACCESS_KEY"]),
+		S3Region:       s3Region,
+		S3AccessKey:    env["S3_ACCESS_KEY"],
+		S3SecretKey:    env["S3_SECRET_KEY"],
+		S3Endpoint:     strings.TrimRight(env["S3_ENDPOINT"], "/"),
+		S3UsePathStyle: s3UsePathStyle,
 
-		BlobBucket: first(env["BUCKET"], env["KF_BLOB_BUCKET"]),
-		BlobPrefix: "kfuse/" + prefix,
-		LowerID:    "test-lower",
+		S3Bucket: env["S3_BUCKET"],
+		S3Prefix: "kfuse/" + prefix,
+		LowerID:  "test-lower",
 	}
-	var missing []string
-	for k, v := range map[string]string{
-		"KafkaBrokers": cfg.KafkaBrokers, "SASL user": cfg.KafkaSASLUser,
-		"SASL password": cfg.KafkaSASLPassword, "region": cfg.AWSRegion,
-		"access key": cfg.AWSAccessKey, "secret key": cfg.AWSSecretKey,
-		"bucket": cfg.BlobBucket,
-	} {
-		if v == "" {
-			missing = append(missing, k)
-		}
-	}
-	if len(missing) > 0 {
-		return cfg, fmt.Errorf("%s missing: %v", p, missing)
+	if err := cfg.Validate(); err != nil {
+		return cfg, fmt.Errorf("%s: %w", p, err)
 	}
 	return cfg, nil
 }
@@ -97,15 +126,6 @@ func Config(prefix string) (config.Config, error) {
 // RunID returns a short unique identifier for one test run.
 func RunID() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano())
-}
-
-func first(vals ...string) string {
-	for _, v := range vals {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
 }
 
 // Require skips the test when credentials are unavailable.

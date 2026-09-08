@@ -35,19 +35,24 @@ const (
 	baseBackoff = 100 * time.Millisecond
 )
 
-// NewClient builds an S3 client from static credentials in cfg. Requests
-// retry throttling, 5xx and transient network failures with exponential
-// backoff: a blip must not surface as a failed write.
+// NewClient builds an S3-compatible client from static credentials in cfg.
+// Requests retry throttling, 5xx and transient network failures with
+// exponential backoff: a blip must not surface as a failed write.
 func NewClient(cfg config.Config) *s3.Client {
 	return s3.NewFromConfig(aws.Config{
-		Region:      cfg.AWSRegion,
-		Credentials: credentials.NewStaticCredentialsProvider(cfg.AWSAccessKey, cfg.AWSSecretKey, ""),
+		Region:      cfg.S3Region,
+		Credentials: credentials.NewStaticCredentialsProvider(cfg.S3AccessKey, cfg.S3SecretKey, ""),
 		Retryer: func() aws.Retryer {
 			return retry.NewStandard(func(o *retry.StandardOptions) {
 				o.MaxAttempts = maxAttempts
 				o.MaxBackoff = maxBackoff
 			})
 		},
+	}, func(o *s3.Options) {
+		if cfg.S3Endpoint != "" {
+			o.BaseEndpoint = aws.String(cfg.S3Endpoint)
+		}
+		o.UsePathStyle = cfg.S3UsePathStyle
 	})
 }
 
