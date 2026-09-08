@@ -10,7 +10,7 @@
 #   ./examples/perf/run.sh [--creds <file>] [out-dir]
 #
 # Requires FUSE on the host (/dev/fuse + fusermount3) and the standard kfuse
-# env (KF_KAFKA_*, AWS_*, KF_BLOB_BUCKET). Results land in <out-dir>
+# env (BOOTSTRAP_SERVER, KAFKA_*, S3_*). Results land in <out-dir>
 # (default examples/perf/results/<utc-timestamp>): raw JSONL per scenario,
 # results.json (machine-readable, diff across PRs), results.md.
 set -euo pipefail
@@ -49,7 +49,7 @@ WORK=$(mktemp -d /tmp/kfuse-perf.XXXXXX)
 LOWER=$WORK/lower
 export KF_STATE_DIR=$WORK/state
 export KF_LOWER_ID=${KF_LOWER_ID:-kfuse-perf-lower}
-export KF_BLOB_PREFIX=${KF_BLOB_PREFIX:-kfuse/perf/$(date +%s)/}
+export S3_PREFIX=${S3_PREFIX:-kfuse/perf/$(date +%s)/}
 
 MPID=""
 cleanup() {
@@ -219,7 +219,7 @@ log "analyzing"
   echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "host=$(uname -srm)"
   echo "go=$(go version | awk '{print $3}')"
-  echo "brokers=$KF_KAFKA_BROKERS"
+  echo "brokers=$BOOTSTRAP_SERVER"
 } > "$OUT/run-info.txt"
 rm -rf "$WORK"
 log "done: $OUT/results.md"

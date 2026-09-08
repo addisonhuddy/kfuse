@@ -15,10 +15,10 @@ description: How to runtime-test kfuse FUSE mount behaviour (fd lifecycle, overl
 
 ## What you can and cannot run without credentials
 - `cmd/kfuse mount`, `cmd/fuseprobe`, `examples/*/run.sh` and the `integration`-tagged tests all go through
-  `internal/config.FromEnv`, which **requires** `KF_KAFKA_BROKERS`, `KF_KAFKA_SASL_USERNAME`,
-  `KF_KAFKA_SASL_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `KF_BLOB_BUCKET`.
-  There is **no S3 endpoint override in production code** (only the test-only `internal/s3fake`), so a
-  fully local Kafka+MinIO stack cannot be substituted — plan around it or request the secrets.
+  `internal/config.FromEnv`, which requires `BOOTSTRAP_SERVER`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and
+  `S3_BUCKET`. Kafka SASL credentials are optional; `KAFKA_TLS=false` plus `S3_ENDPOINT` and
+  `S3_PATH_STYLE=true` point the unmodified binary at `examples/local`'s Apache Kafka KRaft + MinIO stack.
+  Prefer `make local-up` over a throwaway harness when validating remote storage behaviour.
 - You *can* mount for real with no creds by building a tiny throwaway `cmd/<harness>` that uses the real
   `internal/fs.Mounter`:
   `upper.New()` + `Apply` a few `kfusev1.EventEnvelope`s (SessionStart / Create / Unlink) →
@@ -44,7 +44,8 @@ description: How to runtime-test kfuse FUSE mount behaviour (fd lifecycle, overl
   `ctrl+plus` keypresses (`ctrl+shift+plus` types literal `+` characters).
 
 ## Devin Secrets Needed
-For `kfuse mount`, `cmd/fuseprobe` and the integration tests: `KF_KAFKA_BROKERS`,
-`KF_KAFKA_SASL_USERNAME`, `KF_KAFKA_SASL_PASSWORD` (Confluent **cluster-level** Kafka API key, not an
-org/global key — SASL fails with `[58]`), `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
-`KF_BLOB_BUCKET`.
+For a hosted `kfuse mount`, `cmd/fuseprobe`, and the integration tests:
+`BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD` (Confluent
+**cluster-level** Kafka API key, not an org/global key — SASL fails with
+`[58]`), `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_BUCKET`.
+Use `make local-up` for a credential-free Apache Kafka + MinIO run.

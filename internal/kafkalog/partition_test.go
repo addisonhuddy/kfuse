@@ -27,7 +27,7 @@ func testLog(t *testing.T, cfg config.Config) *Log {
 func TestNewConfiguresSASLAndTLS(t *testing.T) {
 	l := testLog(t, config.Config{
 		KafkaBrokers:      "b1:9092,b2:9092",
-		KafkaSASLUser:     "user",
+		KafkaSASLUsername: "user",
 		KafkaSASLPassword: "pass",
 		KafkaTLS:          true,
 		KafkaTopic:        "t",

@@ -11,13 +11,14 @@ workspace can pause, resume, and branch across hosts.
 
 The supported first run today is the functional demo. It uses the source
 checkout, builds a Linux demo image, mounts a real FUSE filesystem, and checks
-persistence, resume, branching, and checkpointing against hosted Kafka (Confluent Cloud)
-and AWS S3.
+persistence, resume, branching, and checkpointing. Hosted Confluent Cloud Kafka
+and AWS S3 remain the preferred way to run kfuse; any Kafka-compatible broker
+and S3-compatible object store can be configured instead.
 
 ```sh
 git clone https://github.com/addisonhuddy/kfuse.git
 cd kfuse
-cp .env.example .env       # fill in Kafka and AWS values first
+cp .env.example .env       # fill in Kafka and S3 values first
 ./examples/functional-demo/run.sh
 ```
 
@@ -37,14 +38,39 @@ Requirements for this path:
 The launcher loads the repository-root `.env` automatically; exported
 environment variables take precedence. `--creds <file>` selects another file.
 
-`--probe` skips Kafka writes, but it is still a cloud-backed check: the launcher
-requires the same configuration and the probe writes and reads an S3 blob.
+`--probe` skips Kafka writes, but it is still a storage-backed check: the
+launcher requires the `S3_*` configuration and the probe writes and reads an S3
+blob.
 
 For a live mount instead of the scripted checks, run:
 
 ```sh
 ./examples/functional-demo/run.sh --shell
 ```
+
+### Try it without cloud credentials
+
+`examples/local` provides a development stack: Apache Kafka in single-node
+KRaft mode plus MinIO. On a Linux Docker host, run the same functional demo
+against the local stack:
+
+```sh
+make local-demo   # starts the stack, then runs the demo in a local container
+make local-down   # stop it afterwards
+```
+
+For direct CLI use instead of the demo container:
+
+```sh
+make local-up
+set -a; . examples/local/local.env; set +a
+go build -o kfuse ./cmd/kfuse
+```
+
+The local stack exposes Kafka on `127.0.0.1:9092` for host processes and on
+`host.docker.internal:9094` for containers, MinIO on `127.0.0.1:9000`, and the
+MinIO console on `127.0.0.1:9001`. It uses dummy local credentials only; no
+Confluent Cloud or AWS account is needed.
 
 ## Mount your own workspace
 
@@ -80,10 +106,13 @@ not currently validated for hosting the mount.
 
 ### 2. Configure storage
 
-Copy `.env.example` to `.env` and replace every placeholder. Use the canonical
-variable names shown there. For a Confluent Cloud cluster, use a **Kafka API
-key** from Cluster → API keys, not a Global/org key; the wrong key type fails
-SASL with `[58]`.
+Copy `.env.example` to `.env` and replace every placeholder. The names are
+provider-neutral: Kafka uses `BOOTSTRAP_SERVER`, `KAFKA_TLS`, and optional
+`KAFKA_SASL_*` credentials; object storage uses `S3_*` values. For a Confluent
+Cloud cluster, use a **Kafka API key** from Cluster → API keys, not a
+Global/org key; the wrong key type fails SASL with `[58]`. For MinIO or another
+S3-compatible endpoint, set `S3_ENDPOINT`; set `S3_PATH_STYLE=true` when the
+endpoint does not support bucket subdomains.
 
 Example launchers load `.env` themselves. The `kfuse` binary reads exported
 environment variables:
@@ -219,8 +248,9 @@ use the saved session ID.
 |---|---|
 | [`examples/functional-demo`](examples/functional-demo/README.md) | Scripted POSIX walkthrough, interactive shell, and cross-container session conflict check |
 | [`examples/best-of-n`](examples/best-of-n/README.md) | Checkpoint and parallel hypothesis branches |
+| [`examples/local`](examples/local/README.md) | Credential-free Apache Kafka KRaft + MinIO development stack |
 | [`examples/e2b-sandbox`](examples/e2b-sandbox/README.md) | Resume and branching across disposable E2B sandboxes |
-| [`examples/README.md`](examples/README.md) | Credentials, aliases, and expected pass output for all demos |
+| [`examples/README.md`](examples/README.md) | Credentials and expected pass output for all demos |
 | [`.env.example`](.env.example) | Canonical configuration names and defaults |
 | [`docs/design.md`](docs/design.md) | Design model and shipped implementation notes |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Build, test, integration-test, and contribution workflow |

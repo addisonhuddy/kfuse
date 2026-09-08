@@ -63,9 +63,24 @@ jobs:
           args: release --snapshot --clean --skip=docker
       - run: ls -l dist/*.tar.gz dist/checksums.txt
 
-  # Integration tests talk to a real Confluent cluster and S3 bucket, so they
-  # only run when the repository secrets are configured (manual dispatch or
-  # pushes to main — never for forked pull requests).
+  # Provider-neutral integration coverage: the same tests run against local
+  # Apache Kafka (single-node KRaft) and MinIO on every PR, without secrets.
+  local-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: ./examples/local/up.sh
+      - run: cp examples/local/local.env .env
+      - run: make integration-test
+      - if: always()
+        run: ./examples/local/down.sh
+
+  # Hosted integration tests talk to the preferred Confluent + AWS setup, so
+  # they only run when the repository secrets are configured (manual dispatch
+  # or pushes to main — never for forked pull requests).
   integration:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -77,29 +92,29 @@ jobs:
       - name: Write .env from secrets
         id: env
         env:
-          KF_KAFKA_BROKERS: ${{ secrets.KF_KAFKA_BROKERS }}
-          KF_KAFKA_SASL_USERNAME: ${{ secrets.KF_KAFKA_SASL_USERNAME }}
-          KF_KAFKA_SASL_PASSWORD: ${{ secrets.KF_KAFKA_SASL_PASSWORD }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          KF_BLOB_BUCKET: ${{ secrets.KF_BLOB_BUCKET }}
+          BOOTSTRAP_SERVER: ${{ secrets.BOOTSTRAP_SERVER }}
+          KAFKA_SASL_USERNAME: ${{ secrets.KAFKA_SASL_USERNAME }}
+          KAFKA_SASL_PASSWORD: ${{ secrets.KAFKA_SASL_PASSWORD }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
-          if [ -z "$KF_KAFKA_BROKERS" ] || [ -z "$KF_BLOB_BUCKET" ]; then
+          if [ -z "$BOOTSTRAP_SERVER" ] || [ -z "$S3_BUCKET" ]; then
             echo "integration secrets not configured; skipping"
             echo "ready=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           {
-            echo "KF_KAFKA_BROKERS=$KF_KAFKA_BROKERS"
-            echo "KF_KAFKA_SASL_USERNAME=$KF_KAFKA_SASL_USERNAME"
-            echo "KF_KAFKA_SASL_PASSWORD=$KF_KAFKA_SASL_PASSWORD"
-            echo "KF_KAFKA_TLS=true"
-            echo "KF_KAFKA_TOPIC=kfuse.events"
-            echo "AWS_REGION=$AWS_REGION"
-            echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
-            echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
-            echo "KF_BLOB_BUCKET=$KF_BLOB_BUCKET"
+            echo "BOOTSTRAP_SERVER=$BOOTSTRAP_SERVER"
+            echo "KAFKA_SASL_USERNAME=$KAFKA_SASL_USERNAME"
+            echo "KAFKA_SASL_PASSWORD=$KAFKA_SASL_PASSWORD"
+            echo "KAFKA_TLS=true"
+            echo "KAFKA_TOPIC=kfuse.events"
+            echo "S3_REGION=$S3_REGION"
+            echo "S3_ACCESS_KEY=$S3_ACCESS_KEY"
+            echo "S3_SECRET_KEY=$S3_SECRET_KEY"
+            echo "S3_BUCKET=$S3_BUCKET"
           } > .env
           echo "ready=true" >> "$GITHUB_OUTPUT"
       - if: steps.env.outputs.ready == 'true'

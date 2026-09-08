@@ -508,7 +508,7 @@ def main() -> None:
         controller = PersistentSandbox(
             env,
             binary,
-            creds["E2B_API_KEY"],
+            creds["E2B_KEY"],
             console,
         )
         try:
@@ -516,7 +516,7 @@ def main() -> None:
         finally:
             controller.close()
     else:
-        demo(console, env, binary, creds["E2B_API_KEY"])
+        demo(console, env, binary, creds["E2B_KEY"])
 
 
 if __name__ == "__main__":

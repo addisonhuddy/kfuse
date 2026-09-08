@@ -43,9 +43,9 @@ source examples/perf/.stack-env
 Against real Confluent + S3 (network-realistic numbers), the repo-root `.env`
 loads automatically, or pass another file with `--creds <file>`, then run
 `run.sh`. Already-exported environment values win, so `source .stack-env` still
-works. Short names (`BOOTSTRAP_SERVER`, `CONFLUENT_CLOUD_KEY`,
-`CONFLUENT_CLOUD_SECRET`, `REGION`, `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`,
-`BUCKET`) and canonical names (`KF_*`, `AWS_*`) both work.
+works. Use `BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`,
+`KAFKA_SASL_PASSWORD`, `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and
+`S3_BUCKET`.
 
 Results land in `examples/perf/results/<utc-timestamp>/`:
 

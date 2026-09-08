@@ -22,9 +22,10 @@ import (
 // cloudEnv is every variable a remote command needs. Local tests clear all of
 // them so any attempt to build a Kafka or S3 client fails validation loudly.
 var cloudEnv = []string{
-	"KF_KAFKA_BROKERS", "KF_KAFKA_SASL_USERNAME", "KF_KAFKA_SASL_PASSWORD",
-	"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "KF_BLOB_BUCKET",
-	"AWS_REGION", "KF_KAFKA_TLS", "KF_KAFKA_TOPIC", "KF_KAFKA_PARTITIONS",
+	"BOOTSTRAP_SERVER", "KAFKA_SASL_USERNAME", "KAFKA_SASL_PASSWORD",
+	"S3_ACCESS_KEY", "S3_SECRET_KEY", "S3_BUCKET",
+	"S3_REGION", "S3_ENDPOINT", "S3_PATH_STYLE", "S3_PREFIX",
+	"KAFKA_TLS", "KAFKA_TOPIC", "KAFKA_PARTITIONS",
 }
 
 // localOnly gives the test a temp state dir and lower with no cloud variables
@@ -172,7 +173,7 @@ func TestCheckpointFallbackStillRequiresCloudConfig(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "missing required env") {
 		t.Fatalf("checkpoint fallback = %v, want strict config validation", err)
 	}
-	for _, v := range []string{"KF_KAFKA_BROKERS", "AWS_ACCESS_KEY_ID", "KF_BLOB_BUCKET"} {
+	for _, v := range []string{"BOOTSTRAP_SERVER", "S3_ACCESS_KEY", "S3_BUCKET"} {
 		if !strings.Contains(err.Error(), v) {
 			t.Errorf("error does not name %s: %v", v, err)
 		}
@@ -202,13 +203,15 @@ func TestSessionLsRequiresOnlyStorageConfig(t *testing.T) {
 		t.Fatal("session ls without storage config must fail")
 	}
 	msg := err.Error()
-	for _, v := range []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "KF_BLOB_BUCKET"} {
+	for _, v := range []string{"S3_ACCESS_KEY", "S3_SECRET_KEY", "S3_BUCKET"} {
 		if !strings.Contains(msg, v) {
 			t.Errorf("session ls error does not name %s: %v", v, err)
 		}
 	}
-	if strings.Contains(msg, "KAFKA") {
-		t.Fatalf("session ls demanded Kafka configuration: %v", err)
+	for _, v := range []string{"BOOTSTRAP_SERVER", "KAFKA_SASL_USERNAME", "KAFKA_SASL_PASSWORD"} {
+		if strings.Contains(msg, v) {
+			t.Fatalf("session ls demanded Kafka configuration %s: %v", v, err)
+		}
 	}
 }
 

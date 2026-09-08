@@ -28,8 +28,8 @@ func newTestRegistry(t *testing.T) (*Registry, *s3fake.Server) {
 
 func TestNewUsesConfigBucketAndPrefix(t *testing.T) {
 	r, err := New(context.Background(), config.Config{
-		BlobBucket: "b", BlobPrefix: "p/", AWSRegion: "us-east-1",
-		AWSAccessKey: "a", AWSSecretKey: "s",
+		S3Bucket: "b", S3Prefix: "p/", S3Region: "us-east-1",
+		S3AccessKey: "a", S3SecretKey: "s",
 	})
 	if err != nil {
 		t.Fatal(err)

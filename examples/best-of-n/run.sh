@@ -9,7 +9,7 @@
 # One parent sandbox reproduces a bug and checkpoints. Three hypothesis
 # sandboxes then run in parallel, each mounting its own child session and
 # trying a different patch. A judge sandbox confirms the parent stayed
-# untouched. Same credentials as functional-demo (hosted Confluent + AWS).
+# untouched. Same Kafka + S3-compatible configuration as functional-demo.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
@@ -36,16 +36,19 @@ echo "run.sh: building best-of-n image (kfuse + toy project baked in)"
 docker build -q -f examples/best-of-n/Dockerfile -t kfuse-best-of-n .
 
 ENV_ARGS=(
-  -e KF_KAFKA_TLS="$KF_KAFKA_TLS"
-  -e KF_KAFKA_TOPIC="$KF_KAFKA_TOPIC"
-  -e KF_KAFKA_BROKERS="$KF_KAFKA_BROKERS"
-  -e KF_KAFKA_SASL_USERNAME="$KF_KAFKA_SASL_USERNAME"
-  -e KF_KAFKA_SASL_PASSWORD="$KF_KAFKA_SASL_PASSWORD"
-  -e AWS_REGION="$AWS_REGION"
-  -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
-  -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
-  -e KF_BLOB_BUCKET="$KF_BLOB_BUCKET"
-  -e KF_BLOB_PREFIX="kfuse/test/best-of-n/$(date +%s)-$RANDOM/"
+  -e KAFKA_TLS="$KAFKA_TLS"
+  -e KAFKA_TOPIC="$KAFKA_TOPIC"
+  -e KAFKA_PARTITIONS="${KAFKA_PARTITIONS:-8}"
+  -e BOOTSTRAP_SERVER="$BOOTSTRAP_SERVER"
+  -e KAFKA_SASL_USERNAME="${KAFKA_SASL_USERNAME:-}"
+  -e KAFKA_SASL_PASSWORD="${KAFKA_SASL_PASSWORD:-}"
+  -e S3_REGION="${S3_REGION:-}"
+  -e S3_ACCESS_KEY="$S3_ACCESS_KEY"
+  -e S3_SECRET_KEY="$S3_SECRET_KEY"
+  -e S3_ENDPOINT="${S3_ENDPOINT:-}"
+  -e S3_PATH_STYLE="${S3_PATH_STYLE:-false}"
+  -e S3_BUCKET="$S3_BUCKET"
+  -e S3_PREFIX="kfuse/test/best-of-n/$(date +%s)-$RANDOM/"
   -e KF_LOWER_ID=kfuse-best-of-n-lower
 )
 

@@ -6,6 +6,13 @@ See `.goreleaser.yaml` (`changelog:` section) for the grouping rules.
 
 ## Unreleased
 
+- Breaking configuration change: external services use neutral
+  `KAFKA_*` and `S3_*` names (`BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`,
+  `KAFKA_SASL_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION`,
+  `S3_BUCKET`, `S3_PREFIX`, `S3_ENDPOINT`, `S3_PATH_STYLE`, and `E2B_KEY`);
+  previous Kafka, AWS, bucket, and blob-prefix variable names are no longer
+  accepted. `examples/local` adds a credential-free Apache Kafka KRaft + MinIO
+  development stack.
 - Open-source release preparation: Apache-2.0 license, contributor docs,
   Dockerfile, GoReleaser config, GitHub Releases workflow, prebuilt-binary
   `install.sh` path.

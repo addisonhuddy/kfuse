@@ -32,8 +32,8 @@ type Registry struct {
 
 func New(ctx context.Context, cfg config.Config) (*Registry, error) {
 	return &Registry{
-		bucket: cfg.BlobBucket,
-		prefix: cfg.BlobPrefix,
+		bucket: cfg.S3Bucket,
+		prefix: cfg.S3Prefix,
 		client: s3util.NewClient(cfg),
 	}, nil
 }

@@ -34,26 +34,9 @@ kfuse_load_env() {
   done < "$file"
 }
 
-kfuse_resolve_aliases() {
-  local canonical short pair
-  local aliases=(
-    "KF_KAFKA_BROKERS BOOTSTRAP_SERVER"
-    "KF_KAFKA_SASL_USERNAME CONFLUENT_CLOUD_KEY"
-    "KF_KAFKA_SASL_PASSWORD CONFLUENT_CLOUD_SECRET"
-    "AWS_REGION REGION"
-    "AWS_ACCESS_KEY_ID AWS_ACCESS_KEY"
-    "AWS_SECRET_ACCESS_KEY AWS_SECRET_KEY"
-    "KF_BLOB_BUCKET BUCKET"
-  )
-  for pair in "${aliases[@]}"; do
-    canonical=${pair%% *}
-    short=${pair#* }
-    if [ -z "${!canonical:-}" ] && [ -n "${!short:-}" ]; then
-      export "$canonical=${!short}"
-    fi
-  done
-  [ -n "${KF_KAFKA_TLS:-}" ] || export KF_KAFKA_TLS=true
-  [ -n "${KF_KAFKA_TOPIC:-}" ] || export KF_KAFKA_TOPIC=kfuse.events
+kfuse_apply_defaults() {
+  [ -n "${KAFKA_TLS:-}" ] || export KAFKA_TLS=true
+  [ -n "${KAFKA_TOPIC:-}" ] || export KAFKA_TOPIC=kfuse.events
 }
 
 kfuse_require_env() {
@@ -81,8 +64,7 @@ kfuse_require_env() {
 
 kfuse_env_init() {
   kfuse_load_env "${1:-}"
-  kfuse_resolve_aliases
+  kfuse_apply_defaults
   kfuse_require_env \
-    KF_KAFKA_BROKERS KF_KAFKA_SASL_USERNAME KF_KAFKA_SASL_PASSWORD \
-    AWS_REGION AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY KF_BLOB_BUCKET
+    BOOTSTRAP_SERVER S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET
 }

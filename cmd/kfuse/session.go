@@ -34,7 +34,7 @@ type lower struct {
 }
 
 // resolveLocal loads the environment and resolves the lower directory and its
-// logical ID without requiring any Kafka or AWS variable: local commands
+// logical ID without requiring any Kafka or S3 variable: local commands
 // (select, status, umount, the daemon control path) must work without cloud
 // credentials.
 func (f *sharedFlags) resolveLocal() (lower, error) {
