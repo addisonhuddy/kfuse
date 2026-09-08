@@ -3,7 +3,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/addisonhuddy/kfuse/actions/workflows/ci.yml/badge.svg)](https://github.com/addisonhuddy/kfuse/actions/workflows/ci.yml)
 
-A branching overlay filesystem for coding-agent sandboxes. Mount a session over
+A branching overlay filesystem for agents. Mount a session over
 a base directory; mutations commit to Kafka, file bytes land in S3, and the
 workspace can pause, resume, and branch across hosts.
 
@@ -11,7 +11,7 @@ workspace can pause, resume, and branch across hosts.
 
 The supported first run today is the functional demo. It uses the source
 checkout, builds a Linux demo image, mounts a real FUSE filesystem, and checks
-persistence, resume, branching, and checkpointing against hosted Confluent Cloud
+persistence, resume, branching, and checkpointing against hosted Kafka (Confluent Cloud)
 and AWS S3.
 
 ```sh
