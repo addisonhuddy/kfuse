@@ -13,17 +13,13 @@ Use `BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD`,
 
 | Demo | What it shows | Pass line |
 |---|---|---|
-| [`functional-demo`](functional-demo/README.md) | POSIX walkthrough: create, write, dirs, symlinks, attrs, rename, sparse CoW, resume, branch, checkpoint | `DEMO PASS (42/42 steps)` |
-| [`local`](local/README.md) | Same walkthrough against local Apache Kafka KRaft + MinIO | `DEMO PASS (42/42 steps)` |
-| [`best-of-n`](best-of-n/README.md) | Dirty workspace → checkpoint → 3 parallel hypothesis sandboxes → judge | `BEST-OF-N PASS` |
+| [`local`](local/README.md) | POSIX walkthrough against local Apache Kafka KRaft + MinIO; also runs against hosted creds via `run.sh --creds` | `DEMO PASS (42/42 steps)` |
 | [`e2b-sandbox`](e2b-sandbox/README.md) | Durable kfuse sessions across disposable E2B sandboxes and parallel branches | `E2B DEMO PASS` / `E2B BRANCH DEMO PASS` |
 
 ```sh
-./examples/functional-demo/run.sh                # needs creds; default .env
-./examples/functional-demo/run.sh --probe        # FUSE only, no Kafka
-./examples/functional-demo/run.sh --shell        # interactive mount
-./examples/functional-demo/run.sh --cross-host   # two sandboxes, one session
-./examples/best-of-n/run.sh
-./examples/best-of-n/run.sh --creds ~/secrets/my-kfuse.env
+make local-demo
+./examples/local/run.sh --probe
+./examples/local/run.sh --shell
+./examples/local/run.sh --cross-host --creds .env
 cd examples/e2b-sandbox && uv run main.py
 ```

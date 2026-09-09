@@ -3,7 +3,7 @@
 # (The host-side launcher is run.sh; it builds the image and calls this.)
 #
 # Modes (first argument, default "demo"):
-#   demo   — scripted walkthrough (see examples/functional-demo/README.md)
+#   demo   — scripted walkthrough (see examples/local/README.md)
 #   probe  — read-side FUSE verification (no Kafka needed)
 #   shell  — interactive: mount a session, drop into bash, unmount on exit
 #   bash   — plain shell

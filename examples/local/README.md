@@ -32,6 +32,35 @@ The demo uses `container.env`: Kafka advertises a second listener on
 `host.docker.internal:9000`. This still requires a Linux Docker host with
 `/dev/fuse`; Docker Desktop mount support is not currently validated.
 
+## Walkthrough modes
+
+`run.sh` builds the image and runs the walkthrough in a privileged container.
+It exits non-zero on the first failing step and prints
+`DEMO PASS (42/42 steps)` when everything works.
+
+```sh
+./examples/local/run.sh               # needs hosted credentials from .env
+./examples/local/run.sh --probe       # FUSE + S3 checks, no Kafka
+./examples/local/run.sh --shell       # live mount + bash
+./examples/local/run.sh --cross-host  # two sandboxes, one session
+./examples/local/run.sh --local --creds examples/local/container.env
+```
+
+The walkthrough covers creating and mounting a session, writes and appends,
+unlinking files, directories, symlinks, attributes, rename, sparse
+copy-on-write, resume, branching, checkpointing, and cross-host lease
+conflicts. The `--local` flag lets the container reach host-published local
+services; `--creds <file>` selects another credentials file, while exported
+environment values take precedence.
+
+The image can also be run directly:
+
+```sh
+docker build -f examples/local/Dockerfile -t kfuse-local-demo .
+docker run --rm --privileged --device /dev/fuse \
+  --env-file <creds.env> kfuse-local-demo          # also: probe | shell | bash
+```
+
 ## Use kfuse directly
 
 ```sh

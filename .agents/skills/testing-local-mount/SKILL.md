@@ -49,7 +49,7 @@ kfuse mount "$SID" --foreground --lower /tmp/kf-harness/lower --lower-id local-l
 kill -TERM $!   # clean unmount; fusermount3 -u <dir> to force
 ```
 
-`examples/functional-demo/demo.sh` is the canonical golden path — mirror its
+`examples/local/walkthrough.sh` is the canonical golden path — mirror its
 assertions instead of inventing new ones. On Linux Docker hosts,
 `./examples/local/demo.sh` runs that demo in a privileged container using
 `examples/local/container.env` (`host.docker.internal`).

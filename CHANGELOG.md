@@ -6,6 +6,9 @@ See `.goreleaser.yaml` (`changelog:` section) for the grouping rules.
 
 ## Unreleased
 
+- examples: removed best-of-n, functional-demo, perf; the functional walkthrough
+  now lives in examples/local (run.sh/walkthrough.sh) and runs against the
+  local stack by default
 - Breaking configuration change: external services use neutral
   `KAFKA_*` and `S3_*` names (`BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`,
   `KAFKA_SASL_PASSWORD`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION`,

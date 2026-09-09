@@ -9,7 +9,7 @@ workspace can pause, resume, and branch across hosts.
 
 ## Try it
 
-The supported first run today is the functional demo. It uses the source
+The supported first run today is the local demo. It uses the source
 checkout, builds a Linux demo image, mounts a real FUSE filesystem, and checks
 persistence, resume, branching, and checkpointing. Hosted Confluent Cloud Kafka
 and AWS S3 remain the preferred way to run kfuse; any Kafka-compatible broker
@@ -18,8 +18,7 @@ and S3-compatible object store can be configured instead.
 ```sh
 git clone https://github.com/addisonhuddy/kfuse.git
 cd kfuse
-cp .env.example .env       # fill in Kafka and S3 values first
-./examples/functional-demo/run.sh
+make local-demo
 ```
 
 The demo prints progress for each check and ends with:
@@ -32,11 +31,13 @@ Requirements for this path:
 
 - a source checkout;
 - a Linux Docker environment that can run privileged containers with `/dev/fuse`;
-- a Confluent Cloud cluster and a cluster-level Kafka API key;
-- an S3 bucket and credentials with read/write access to the configured prefix.
+- Docker Compose support for the local Kafka and MinIO containers.
 
-The launcher loads the repository-root `.env` automatically; exported
-environment variables take precedence. `--creds <file>` selects another file.
+The local demo uses dummy credentials and does not need a cloud account. To run
+the walkthrough against hosted services instead, use
+`./examples/local/run.sh`; it loads the repository-root `.env` automatically,
+and exported environment variables take precedence. `--creds <file>` selects
+another file.
 
 `--probe` skips Kafka writes, but it is still a storage-backed check: the
 launcher requires the `S3_*` configuration and the probe writes and reads an S3
@@ -45,7 +46,7 @@ blob.
 For a live mount instead of the scripted checks, run:
 
 ```sh
-./examples/functional-demo/run.sh --shell
+./examples/local/run.sh --shell
 ```
 
 ### Try it without cloud credentials
@@ -246,11 +247,9 @@ use the saved session ID.
 
 | Path | What it shows |
 |---|---|
-| [`examples/functional-demo`](examples/functional-demo/README.md) | Scripted POSIX walkthrough, interactive shell, and cross-container session conflict check |
-| [`examples/best-of-n`](examples/best-of-n/README.md) | Checkpoint and parallel hypothesis branches |
-| [`examples/local`](examples/local/README.md) | Credential-free Apache Kafka KRaft + MinIO development stack |
+| [`examples/local`](examples/local/README.md) | POSIX walkthrough against local Apache Kafka KRaft + MinIO; also runs against hosted creds via `run.sh --creds` |
 | [`examples/e2b-sandbox`](examples/e2b-sandbox/README.md) | Resume and branching across disposable E2B sandboxes |
-| [`examples/README.md`](examples/README.md) | Credentials and expected pass output for all demos |
+| [`examples/README.md`](examples/README.md) | Credentials and expected pass output for the demos |
 | [`.env.example`](.env.example) | Canonical configuration names and defaults |
 | [`docs/design.md`](docs/design.md) | Design model and shipped implementation notes |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Build, test, integration-test, and contribution workflow |

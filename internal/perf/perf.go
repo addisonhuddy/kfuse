@@ -1,8 +1,8 @@
 // Copyright 2026 Addison Huddy
 // SPDX-License-Identifier: Apache-2.0
 
-// Package perf is an opt-in, low-overhead JSONL event recorder for the
-// benchmark suite (examples/perf). When KF_PERF_LOG names a file, every
+// Package perf is an opt-in, low-overhead JSONL event recorder for benchmark
+// and profiling runs. When KF_PERF_LOG names a file, every
 // instrumented phase (blob PUT, Kafka append, upper apply, FUSE reads,
 // resume replay, checkpoints, branches) appends one JSON object per line.
 // When the variable is unset the fast path is a single atomic load.

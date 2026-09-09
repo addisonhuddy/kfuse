@@ -61,7 +61,7 @@ fmt-check:
 
 # Cheapest end-to-end check: FUSE + S3 probe, no Kafka append.
 probe:
-	./examples/functional-demo/run.sh --probe
+	./examples/local/run.sh --probe
 
 clean:
 	rm -f $(BIN)
