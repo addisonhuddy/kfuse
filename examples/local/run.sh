@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# kfuse demo launcher. Loads .env via examples/lib/env.sh, builds the demo image
+# kfuse demo launcher. Loads .env via examples/local/env.sh, builds the demo image
 # (kfuse baked in), and runs the requested mode in the reference sandbox
 # (Docker --privileged, /dev/fuse).
 #
-#   ./examples/functional-demo/run.sh                     scripted walkthrough
-#   ./examples/functional-demo/run.sh --probe             FUSE + S3 probe (no Kafka)
-#   ./examples/functional-demo/run.sh --shell             interactive mount + bash prompt
-#   ./examples/functional-demo/run.sh --creds <file>      credentials file (default .env)
-#   ./examples/functional-demo/run.sh --local             reach host-published services
+#   ./examples/local/run.sh                     scripted walkthrough
+#   ./examples/local/run.sh --probe             FUSE + S3 probe (no Kafka)
+#   ./examples/local/run.sh --shell             interactive mount + bash prompt
+#   ./examples/local/run.sh --creds <file>      credentials file (default .env)
+#   ./examples/local/run.sh --local             reach host-published services
 #
 # The credentials file uses the canonical Kafka and S3-compatible names
 # (BOOTSTRAP_SERVER, KAFKA_SASL_USERNAME, S3_ACCESS_KEY, ...).
@@ -36,7 +36,7 @@ done
 
 [ -z "$CREDS" ] || [ -f "$CREDS" ] ||
   { echo "run.sh: credentials file $CREDS missing"; exit 1; }
-source examples/lib/env.sh
+source examples/local/env.sh
 kfuse_load_env "${CREDS:-}"
 kfuse_apply_defaults
 if [ "$MODE" = probe ]; then
@@ -45,8 +45,8 @@ else
   kfuse_require_env BOOTSTRAP_SERVER S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET
 fi
 
-echo "run.sh: building functional-demo image (kfuse baked in)"
-docker build -q -f examples/functional-demo/Dockerfile -t kfuse-functional-demo .
+echo "run.sh: building local demo image (kfuse baked in)"
+docker build -q -f examples/local/Dockerfile -t kfuse-local-demo .
 
 ENV_ARGS=(
   -e KAFKA_TLS="$KAFKA_TLS"
@@ -61,7 +61,7 @@ ENV_ARGS=(
   -e S3_ENDPOINT="${S3_ENDPOINT:-}"
   -e S3_PATH_STYLE="${S3_PATH_STYLE:-false}"
   -e S3_BUCKET="$S3_BUCKET"
-  -e S3_PREFIX="kfuse/test/functional-demo/$(date +%s)-$RANDOM/"
+  -e S3_PREFIX="kfuse/test/local-demo/$(date +%s)-$RANDOM/"
   -e PROBE_LOWER=/work/lower
 )
 
@@ -72,7 +72,7 @@ fi
 
 if [ "$MODE" = shell ]; then
   echo "run.sh: interactive session (type 'exit' to unmount and quit)"
-  exec docker run -it --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-functional-demo shell
+  exec docker run -it --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo shell
 fi
 
 if [ "$MODE" = cross-host ]; then
@@ -80,23 +80,23 @@ if [ "$MODE" = cross-host ]; then
   XHOST_ARGS=("${ENV_ARGS[@]}" -e KF_LOWER_ID=kfuse-cross-host-lower)
 
   SID=$(docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
-    -e CROSS_STEP=new kfuse-functional-demo cross-host | tail -1)
+    -e CROSS_STEP=new kfuse-local-demo cross-host | tail -1)
   [ -n "$SID" ] || { echo "run.sh: cross-host new produced no session id"; exit 1; }
   echo "run.sh: session $SID"
 
   docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
-    -e CROSS_STEP=resume -e CROSS_SID="$SID" kfuse-functional-demo cross-host
+    -e CROSS_STEP=resume -e CROSS_SID="$SID" kfuse-local-demo cross-host
 
   docker run -d --rm --name kfuse-hold --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
-    -e CROSS_STEP=hold -e CROSS_SID="$SID" kfuse-functional-demo cross-host >/dev/null
+    -e CROSS_STEP=hold -e CROSS_SID="$SID" kfuse-local-demo cross-host >/dev/null
   sleep 3
 
   docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
-    -e CROSS_STEP=conflict -e CROSS_SID="$SID" kfuse-functional-demo cross-host
+    -e CROSS_STEP=conflict -e CROSS_SID="$SID" kfuse-local-demo cross-host
 
   docker stop kfuse-hold >/dev/null
   echo "CROSS-HOST PASS"
   exit 0
 fi
 
-exec docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-functional-demo "$MODE"
+exec docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo "$MODE"

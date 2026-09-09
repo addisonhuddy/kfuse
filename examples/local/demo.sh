@@ -19,4 +19,4 @@ set -a
 . "$DIR/container.env"
 set +a
 
-"$ROOT/examples/functional-demo/run.sh" --local --creds "$DIR/container.env" "$@"
+"$DIR/run.sh" --local --creds "$DIR/container.env" "$@"

@@ -1,5 +1,0 @@
-name=app
-# listen on 9000
-
-  # indented comment
-port=8080

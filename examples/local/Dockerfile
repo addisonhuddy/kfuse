@@ -1,7 +1,7 @@
-# kfuse functional-demo image: kfuse + fuseprobe baked in, fuse3 runtime.
-# Build:  docker build -f examples/functional-demo/Dockerfile -t kfuse-functional-demo .
+# kfuse local demo image: kfuse + fuseprobe baked in, fuse3 runtime.
+# Build:  docker build -f examples/local/Dockerfile -t kfuse-local-demo .
 # Run:    docker run --rm --privileged --device /dev/fuse \
-#           --env-file <creds-file> kfuse-functional-demo [demo|probe|shell|bash]
+#           --env-file <creds-file> kfuse-local-demo [demo|probe|shell|bash]
 FROM golang:1.26 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -18,7 +18,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /out/kfuse /usr/local/bin/kfuse
 COPY --from=build /out/fuseprobe /usr/local/bin/fuseprobe
-COPY examples/functional-demo/demo.sh /demo.sh
+COPY examples/local/walkthrough.sh /demo.sh
 RUN chmod +x /demo.sh && mkdir -p /work/lower
 WORKDIR /work/lower
 ENV KF_STATE_DIR=/var/lib/kfuse

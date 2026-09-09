@@ -88,9 +88,9 @@ loads the local values.
 ## Demos
 
 ```sh
-./examples/functional-demo/run.sh --probe    # FUSE only (= make probe)
-./examples/functional-demo/run.sh            # full walkthrough
-./examples/best-of-n/run.sh
+./examples/local/run.sh --probe    # FUSE only (= make probe)
+./examples/local/run.sh            # full walkthrough
+cd examples/e2b-sandbox && uv run main.py
 ```
 
 `--probe` is the cheap check. The other two need hosted Kafka and S3.
