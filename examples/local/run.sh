@@ -4,7 +4,6 @@
 # (Docker --privileged, /dev/fuse).
 #
 #   ./examples/local/run.sh                     scripted walkthrough
-#   ./examples/local/run.sh --probe             FUSE + S3 probe (no Kafka)
 #   ./examples/local/run.sh --shell             interactive mount + bash prompt
 #   ./examples/local/run.sh --creds <file>      credentials file (default .env)
 #   ./examples/local/run.sh --local             reach host-published services
@@ -20,13 +19,12 @@ LOCAL=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --probe) MODE=probe ;;
     --shell) MODE=shell ;;
     --cross-host) MODE=cross-host ;;
     --local) LOCAL=1 ;;
     --creds) CREDS="$2"; shift ;;
     -h|--help)
-      echo "usage: run.sh [--probe|--shell|--cross-host] [--local] [--creds <file>]"
+      echo "usage: run.sh [--shell|--cross-host] [--local] [--creds <file>]"
       exit 0
       ;;
     *) echo "run.sh: unknown flag $1"; exit 1 ;;
@@ -39,11 +37,7 @@ done
 source examples/local/env.sh
 kfuse_load_env "${CREDS:-}"
 kfuse_apply_defaults
-if [ "$MODE" = probe ]; then
-  kfuse_require_env S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET
-else
-  kfuse_require_env BOOTSTRAP_SERVER S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET
-fi
+kfuse_require_env BOOTSTRAP_SERVER S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET
 
 echo "run.sh: building local demo image (kfuse baked in)"
 docker build -q -f examples/local/Dockerfile -t kfuse-local-demo .
@@ -62,7 +56,6 @@ ENV_ARGS=(
   -e S3_PATH_STYLE="${S3_PATH_STYLE:-false}"
   -e S3_BUCKET="$S3_BUCKET"
   -e S3_PREFIX="kfuse/test/local-demo/$(date +%s)-$RANDOM/"
-  -e PROBE_LOWER=/work/lower
 )
 
 NET_ARGS=()

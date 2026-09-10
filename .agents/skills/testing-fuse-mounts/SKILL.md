@@ -14,7 +14,7 @@ description: How to runtime-test kfuse FUSE mount behaviour (fd lifecycle, overl
   `initialize` step so mount tests work out of the box.
 
 ## What you can and cannot run without credentials
-- `cmd/kfuse mount`, `cmd/fuseprobe`, `examples/*/run.sh` and the `integration`-tagged tests all go through
+- `cmd/kfuse mount`, `examples/*/run.sh` and the `integration`-tagged tests all go through
   `internal/config.FromEnv`, which requires `BOOTSTRAP_SERVER`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and
   `S3_BUCKET`. Kafka SASL credentials are optional; `KAFKA_TLS=false` plus `S3_ENDPOINT` and
   `S3_PATH_STYLE=true` point the unmodified binary at `examples/local`'s Apache Kafka KRaft + MinIO stack.
@@ -44,7 +44,7 @@ description: How to runtime-test kfuse FUSE mount behaviour (fd lifecycle, overl
   `ctrl+plus` keypresses (`ctrl+shift+plus` types literal `+` characters).
 
 ## Devin Secrets Needed
-For a hosted `kfuse mount`, `cmd/fuseprobe`, and the integration tests:
+For a hosted `kfuse mount` and the integration tests:
 `BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD` (Confluent
 **cluster-level** Kafka API key, not an org/global key — SASL fails with
 `[58]`), `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_BUCKET`.

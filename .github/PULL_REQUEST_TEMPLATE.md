@@ -4,7 +4,7 @@
 
 ## Testing
 
-<!-- How you verified it: `make`, `make probe`, integration tests, manual mount, ... -->
+<!-- How you verified it: `make`, integration tests, manual mount, ... -->
 
 ## Checklist
 

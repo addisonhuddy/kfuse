@@ -4,7 +4,6 @@
 #
 # Modes (first argument, default "demo"):
 #   demo   — scripted walkthrough (see examples/local/README.md)
-#   probe  — read-side FUSE verification (no Kafka needed)
 #   shell  — interactive: mount a session, drop into bash, unmount on exit
 #   bash   — plain shell
 #   *      — exec through (e.g. `kfuse mount`)
@@ -361,15 +360,7 @@ mode_demo() {
   unmount_session
   ok
 
-  printf '\nDEMO PASS (%d/%d steps)\n' "$STEP" "$TOTAL"
-}
-
-# --- probe: read-side verification (no Kafka) --------------------------------
-
-mode_probe() {
-  make_lower_fixture
-  printf "lower-hidden" > hidden.txt
-  fuseprobe
+  printf '\nCOMPLETE (%d/%d)\n' "$STEP" "$TOTAL"
 }
 
 # --- cross-host: two sandboxes, one session -------------------------------
@@ -442,7 +433,6 @@ EOF
 
 case "${1:-demo}" in
   demo) mode_demo ;;
-  probe) mode_probe ;;
   shell) mode_shell ;;
   cross-host) mode_crosshost ;;
   bash) exec bash ;;

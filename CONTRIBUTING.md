@@ -44,7 +44,6 @@ make build        # go build -o kfuse ./cmd/kfuse
 make test         # unit tests, no credentials needed
 make vet lint fmt  # go vet ./... ; golangci-lint run ./... ; gofmt -w .
 make integration-test  # needs a repo-root .env (see below)
-make probe        # read-side FUSE probe in Docker, no Kafka or S3
 make docker-build # build the release Dockerfile locally
 make release-snapshot  # goreleaser --snapshot: archives + checksums in dist/
 ```
@@ -87,10 +86,20 @@ loads the local values.
 
 ## Demos
 
+Run the credential-free local walkthrough on a Linux Docker host:
+
 ```sh
-./examples/local/run.sh --probe    # FUSE only (= make probe)
-./examples/local/run.sh            # full walkthrough
+make local-demo
+make local-down
+```
+
+For cloud sandbox persistence and branching, configure E2B, Kafka, and S3
+credentials in the repository-root `.env`, then run:
+
+```sh
 cd examples/e2b-sandbox && uv run main.py
 ```
 
-`--probe` is the cheap check. The other two need hosted Kafka and S3.
+See the [local](examples/local/README.md) and
+[E2B](examples/e2b-sandbox/README.md) guides for prerequisites and interactive
+modes.

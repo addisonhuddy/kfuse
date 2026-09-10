@@ -1,4 +1,4 @@
-.PHONY: all build test test-race test-fuse integration-test local-up local-demo local-down vet lint fmt fmt-check probe docker-build release-snapshot clean
+.PHONY: all build test test-race test-fuse integration-test local-up local-demo local-down vet lint fmt fmt-check docker-build release-snapshot clean
 
 BIN := kfuse
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
@@ -58,10 +58,6 @@ fmt:
 
 fmt-check:
 	@out=$$(gofmt -l .); if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi
-
-# Cheapest end-to-end check: FUSE + S3 probe, no Kafka append.
-probe:
-	./examples/local/run.sh --probe
 
 clean:
 	rm -f $(BIN)
