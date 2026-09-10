@@ -9,33 +9,44 @@ bytes land in S3, and the workspace can pause, resume, and branch across hosts.
 
 ## Getting Started
 
+Pick how you want to run the CLI, then try one of the demos below.
 
+| Method | Best for |
+|---|---|
+| [Binary](#binary) | Linux host with direct CLI use |
+| [Docker](#docker) | Quick isolated run on a Linux container host |
+| [Source](#source) | Development or building for a different architecture |
 
-
-
-Start with one of the two demos:
-
-| Demo | What you'll see | What you need |
-|---|---|---|
-| [Local](#local-demo) | Write files, resume a session, checkpoint, and branch using local Kafka and MinIO | Linux, Docker with Compose, and `/dev/fuse`; no cloud credentials |
-| [E2B](#cloud-demo-e2b) | Persist a workspace beyond its original sandbox and run independent branches in new sandboxes | Go, uv, an E2B account, and hosted Kafka/S3 credentials; no local Docker or FUSE required |
-
-Both demos currently run from a source checkout:
-
-```sh
-git clone https://github.com/addisonhuddy/kfuse.git
-cd kfuse
-```
+The mount runtime still needs Linux, `/dev/fuse`, and `fusermount3`. macOS and
+Windows cannot host a kfuse mount natively; use the E2B demo or a Linux VM.
+Docker Desktop mount support is not currently validated.
 
 ### Binary
 
-TODO LATER: add versioned binary installation instructions after the first release.
-For now, use the demos below or build from source.
+Download the latest release (`v0.1.0`) for your architecture and extract it:
+
+```sh
+# linux/amd64
+curl -sSL https://github.com/addisonhuddy/kfuse/releases/download/v0.1.0/kfuse_0.1.0_linux_amd64.tar.gz | tar xz
+
+# linux/arm64
+# curl -sSL https://github.com/addisonhuddy/kfuse/releases/download/v0.1.0/kfuse_0.1.0_linux_arm64.tar.gz | tar xz
+
+./kfuse --help
+```
+
+Release archives include `LICENSE`, `NOTICE`, and `THIRD_PARTY_LICENSES.md`.
 
 ### Docker
 
-TODO LATER: publish the Docker image and add versioned pull/run instructions.
-The local demo builds its own image from the checkout; no published image is needed.
+```sh
+docker run --rm --privileged --device /dev/fuse \
+  addisonhuddy/kfuse:0.1.0 --help
+```
+
+Available tags: `0.1.0`, `v0.1`, and `latest`. The image only ships the binary;
+to actually mount a session you still need Kafka and S3 (or the local stack from
+the demo below).
 
 ### Source
 
@@ -52,13 +63,7 @@ To build on another host for a Linux sandbox:
 GOOS=linux GOARCH=amd64 go build -o kfuse ./cmd/kfuse
 ```
 
-Use `GOARCH=arm64` for an arm64 runtime. The machine hosting the mount needs
-Linux, `/dev/fuse`, and `fusermount3`. macOS and Windows cannot host a kfuse
-mount natively; use E2B or a Linux VM. Docker Desktop mount support is not
-currently validated.
-
-You do not need to build manually before running either demo: the local demo
-builds Go inside Docker, and the E2B launcher cross-compiles the binary itself.
+Use `GOARCH=arm64` for an arm64 runtime.
 
 ## Examples
 
