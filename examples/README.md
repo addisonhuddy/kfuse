@@ -1,25 +1,41 @@
 # kfuse examples
 
-kfuse is a branching overlay filesystem for coding agents: a FUSE mount over a
-base directory where every mutation is committed to Kafka and S3, so a session
-can be paused, resumed, branched, and reverted across hosts.
+Two demos show how a kfuse workspace persists, resumes, and branches. Run the
+commands below from the repository root unless noted otherwise.
 
-It runs in any Linux sandbox with `/dev/fuse`. The demos use Docker.
-
-Every example loads the repo-root `.env` automatically; pass
-`--creds <file>` to use another file. Already-exported environment values win.
-Use `BOOTSTRAP_SERVER`, `KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD`,
-`S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_BUCKET`.
-
-| Demo | What it shows | Pass line |
+| Demo | What it shows | Successful output |
 |---|---|---|
-| [`local`](local/README.md) | POSIX walkthrough against local Apache Kafka KRaft + MinIO; also runs against hosted creds via `run.sh --creds` | `DEMO PASS (42/42 steps)` |
-| [`e2b-sandbox`](e2b-sandbox/README.md) | Durable kfuse sessions across disposable E2B sandboxes and parallel branches | `E2B DEMO PASS` / `E2B BRANCH DEMO PASS` |
+| [Local](local/README.md) | File operations, persistence, checkpoints, and branching with Apache Kafka and MinIO | `COMPLETE (42/42)` |
+| [E2B](e2b-sandbox/README.md) | Independent branches and checkpoint replay across disposable cloud sandboxes | Branch summary followed by `COMPLETE` |
+
+## Local: no cloud credentials
+
+Requires a Linux Docker host with Compose and `/dev/fuse`. Go is built inside
+the demo image. The launcher supplies dummy development credentials.
 
 ```sh
 make local-demo
-./examples/local/run.sh --probe
-./examples/local/run.sh --shell
-./examples/local/run.sh --cross-host --creds .env
-cd examples/e2b-sandbox && uv run main.py
+./examples/local/demo.sh --shell
+make local-down
 ```
+
+The scripted and interactive modes are alternatives; type `exit` to leave the
+interactive mount before stopping the stack. Stopping preserves data volumes.
+See the [local guide](local/README.md) for other modes and hosted storage options.
+
+## E2B: cloud sandboxes
+
+Requires Go 1.26.4 or newer, uv, Python 3.10 or newer, and E2B/Kafka/S3 credentials.
+Configure the repository-root `.env` using [the template](../.env.example),
+including `E2B_KEY`. The launcher loads that file; non-empty exported variables
+win. The E2B command-line entry point does not accept `--creds`.
+
+```sh
+cd examples/e2b-sandbox
+uv run main.py
+```
+
+Use `uv run main.py --repl` for an interactive workspace and `:restart` to move
+it to a fresh sandbox. No local Docker or FUSE is needed. The demo creates
+billable resources and retains remote history after closing its sandboxes.
+See the [E2B guide](e2b-sandbox/README.md) for setup and session handoff details.

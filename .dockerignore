@@ -25,4 +25,3 @@ docs/
 .agents/
 *.md
 examples/e2b-sandbox/
-examples/perf/results/

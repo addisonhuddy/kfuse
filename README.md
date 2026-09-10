@@ -3,141 +3,172 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/addisonhuddy/kfuse/actions/workflows/ci.yml/badge.svg)](https://github.com/addisonhuddy/kfuse/actions/workflows/ci.yml)
 
-A branching overlay filesystem for agents. Mount a session over
-a base directory; mutations commit to Kafka, file bytes land in S3, and the
-workspace can pause, resume, and branch across hosts.
+kfuse is a branching overlay filesystem designed for agents, backed by Kafka
+and S3. Mount a session over a base directory; mutations commit to Kafka, file
+bytes land in S3, and the workspace can pause, resume, and branch across hosts.
 
-## Try it
+## Getting Started
 
-The supported first run today is the local demo. It uses the source
-checkout, builds a Linux demo image, mounts a real FUSE filesystem, and checks
-persistence, resume, branching, and checkpointing. Hosted Confluent Cloud Kafka
-and AWS S3 remain the preferred way to run kfuse; any Kafka-compatible broker
-and S3-compatible object store can be configured instead.
+
+
+
+
+Start with one of the two demos:
+
+| Demo | What you'll see | What you need |
+|---|---|---|
+| [Local](#local-demo) | Write files, resume a session, checkpoint, and branch using local Kafka and MinIO | Linux, Docker with Compose, and `/dev/fuse`; no cloud credentials |
+| [E2B](#cloud-demo-e2b) | Persist a workspace beyond its original sandbox and run independent branches in new sandboxes | Go, uv, an E2B account, and hosted Kafka/S3 credentials; no local Docker or FUSE required |
+
+Both demos currently run from a source checkout:
 
 ```sh
 git clone https://github.com/addisonhuddy/kfuse.git
 cd kfuse
+```
+
+### Binary
+
+TODO LATER: add versioned binary installation instructions after the first release.
+For now, use the demos below or build from source.
+
+### Docker
+
+TODO LATER: publish the Docker image and add versioned pull/run instructions.
+The local demo builds its own image from the checkout; no published image is needed.
+
+### Source
+
+To build the CLI yourself, use Go 1.26.4 or newer. On Linux:
+
+```sh
+go build -o kfuse ./cmd/kfuse
+./kfuse --help
+```
+
+To build on another host for a Linux sandbox:
+
+```sh
+GOOS=linux GOARCH=amd64 go build -o kfuse ./cmd/kfuse
+```
+
+Use `GOARCH=arm64` for an arm64 runtime. The machine hosting the mount needs
+Linux, `/dev/fuse`, and `fusermount3`. macOS and Windows cannot host a kfuse
+mount natively; use E2B or a Linux VM. Docker Desktop mount support is not
+currently validated.
+
+You do not need to build manually before running either demo: the local demo
+builds Go inside Docker, and the E2B launcher cross-compiles the binary itself.
+
+## Examples
+
+### Local demo
+
+The quickest credential-free path. This starts Apache Kafka in single-node
+KRaft mode and MinIO, builds a demo container, and runs a real FUSE walkthrough
+covering file operations, persistence, resume, checkpointing, and branching.
+
+From the repository root on a Linux Docker host with Compose and `/dev/fuse`:
+
+```sh
 make local-demo
 ```
 
-The demo prints progress for each check and ends with:
+Successful output ends with:
 
 ```text
-DEMO PASS (42/42 steps)
+COMPLETE (42/42)
 ```
 
-Requirements for this path:
-
-- a source checkout;
-- a Linux Docker environment that can run privileged containers with `/dev/fuse`;
-- Docker Compose support for the local Kafka and MinIO containers.
-
-The local demo uses dummy credentials and does not need a cloud account. To run
-the walkthrough against hosted services instead, use
-`./examples/local/run.sh`; it loads the repository-root `.env` automatically,
-and exported environment variables take precedence. `--creds <file>` selects
-another file.
-
-`--probe` skips Kafka writes, but it is still a storage-backed check: the
-launcher requires the `S3_*` configuration and the probe writes and reads an S3
-blob.
-
-For a live mount instead of the scripted checks, run:
+For an interactive mount instead of the scripted walkthrough:
 
 ```sh
-./examples/local/run.sh --shell
+./examples/local/demo.sh --shell
 ```
 
-### Try it without cloud credentials
-
-`examples/local` provides a development stack: Apache Kafka in single-node
-KRaft mode plus MinIO. On a Linux Docker host, run the same functional demo
-against the local stack:
+Type `exit` to leave the interactive mount. Stop Kafka and MinIO when finished:
 
 ```sh
-make local-demo   # starts the stack, then runs the demo in a local container
-make local-down   # stop it afterwards
+make local-down
 ```
 
-For direct CLI use instead of the demo container:
+Stopping the stack preserves its data volumes. The stack uses dummy credentials
+and unauthenticated Kafka; run it only on a trusted development host, not a
+publicly reachable server. The privileged demo container is not a security
+boundary for untrusted agent code.
+
+See the [local demo guide](examples/local/README.md) for direct CLI use,
+additional walkthrough modes, and running the same demo against hosted services.
+
+### Cloud demo: E2B
+
+See a workspace outlive its sandbox. The E2B demo writes and checkpoints a file,
+removes the original sandbox, then creates independent branches in new
+sandboxes and verifies replay from both a checkpoint and a branch's latest state.
+
+On your development machine, you need:
+
+- Go 1.26.4 or newer on `PATH`;
+- uv and Python 3.10 or newer;
+- an E2B API key;
+- a Kafka broker and S3-compatible bucket reachable from the E2B sandboxes.
+  Confluent Cloud and AWS S3 are the preferred hosted setup.
+
+Create a repository-root `.env` from the template if you do not already have one:
+
+```sh
+cp -n .env.example .env
+```
+
+Fill in `BOOTSTRAP_SERVER`, the Kafka SASL credentials for your hosted broker,
+`S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_BUCKET`. Uncomment and set
+`E2B_KEY`. For Confluent Cloud, use a **cluster-level Kafka API key**, not an
+organization/global key. Never commit `.env`.
+
+Then run:
+
+```sh
+cd examples/e2b-sandbox
+uv run main.py
+```
+
+The launcher reads the repository-root `.env` (non-empty exported variables take
+precedence), builds a Linux binary, and uploads it to the sandboxes. No custom
+E2B template or local Docker/FUSE setup is needed. A successful run prints a
+branch summary and ends with `COMPLETE`.
+
+For an interactive workspace, run from the same directory:
+
+```sh
+uv run main.py --repl
+```
+
+Use `:restart` to move the session to a fresh sandbox, and `exit` to quit.
+The demo creates billable cloud resources and retains session history in Kafka
+and S3 after closing its sandboxes. See the [E2B demo guide](examples/e2b-sandbox/README.md)
+for credentials, session handoff, and troubleshooting.
+
+## Use the CLI
+
+A **lower** is the read-only base directory; a **session** is a mutable view over
+it. After building the CLI on Linux, configure storage from the repository root.
+For local Kafka and MinIO:
 
 ```sh
 make local-up
 set -a; . examples/local/local.env; set +a
-go build -o kfuse ./cmd/kfuse
 ```
 
-The local stack exposes Kafka on `127.0.0.1:9092` for host processes and on
-`host.docker.internal:9094` for containers, MinIO on `127.0.0.1:9000`, and the
-MinIO console on `127.0.0.1:9001`. It uses dummy local credentials only; no
-Confluent Cloud or AWS account is needed.
+For hosted storage, fill in `.env` using [.env.example](.env.example), then export
+it with `set -a; . ./.env; set +a`. The CLI reads exported environment variables;
+it does not load `.env` automatically.
 
-## Mount your own workspace
-
-Build the Linux binary from source, configure storage, then use explicit session
-and lower IDs. A **lower** is the read-only base directory; a **session** is one
-mutable view over that lower.
-
-### 1. Build the binary
-
-A Go toolchain is required only when building from source. Use Go 1.26.4 or
-newer.
-
-On Linux:
+Create a disposable lower and prove that a write survives remounting. Keep your
+shell outside the lower directory to avoid a busy unmount:
 
 ```sh
-go build -o kfuse ./cmd/kfuse
-# or: ./install.sh --source
-```
-
-From another development host, cross-compile the binary that will run in the
-Linux sandbox:
-
-```sh
-GOOS=linux GOARCH=amd64 go build -o kfuse ./cmd/kfuse
-# for arm64 sandboxes: GOOS=linux GOARCH=arm64 ...
-```
-
-The runtime host needs Linux with FUSE support (`/dev/fuse` and `fusermount3`).
-macOS and Windows cannot host a kfuse mount natively; use a Linux sandbox or VM.
-Docker support is limited to Linux container environments that can run a
-privileged container with `/dev/fuse`. Docker Desktop on macOS and Windows is
-not currently validated for hosting the mount.
-
-### 2. Configure storage
-
-Copy `.env.example` to `.env` and replace every placeholder. The names are
-provider-neutral: Kafka uses `BOOTSTRAP_SERVER`, `KAFKA_TLS`, and optional
-`KAFKA_SASL_*` credentials; object storage uses `S3_*` values. For a Confluent
-Cloud cluster, use a **Kafka API key** from Cluster → API keys, not a
-Global/org key; the wrong key type fails SASL with `[58]`. For MinIO or another
-S3-compatible endpoint, set `S3_ENDPOINT`; set `S3_PATH_STYLE=true` when the
-endpoint does not support bucket subdomains.
-
-Example launchers load `.env` themselves. The `kfuse` binary reads exported
-environment variables:
-
-```sh
-set -a && . ./.env && set +a
-```
-
-Choose a stable `KF_LOWER_ID` for the logical base. Use a unique ID per base
-tree rather than a generic value shared by unrelated directories. To resume on
-another host, use the same lower ID and an equivalent base tree; the session ID
-alone does not describe the base contents.
-
-### 3. Prove persistence and branching
-
-Run these commands from a shell whose working directory is outside the mounted
-lower. Keeping the shell outside the mount avoids a busy unmount.
-
-```sh
-BASE=/tmp/kfuse-lower
-LOWER_ID=my-first-lower
-mkdir -p "$BASE"
-printf 'base\n' > "$BASE/base.txt"
-
+BASE=$(mktemp -d /tmp/kfuse-lower.XXXXXX)
+LOWER_ID=$(basename "$BASE")
 SID=$(./kfuse session new --lower "$BASE" --lower-id "$LOWER_ID")
 
 ./kfuse mount "$SID" --lower "$BASE" --lower-id "$LOWER_ID"
@@ -145,69 +176,15 @@ printf 'hello\n' > "$BASE/hello.txt"
 ./kfuse umount --lower "$BASE" --lower-id "$LOWER_ID"
 
 ./kfuse mount "$SID" --lower "$BASE" --lower-id "$LOWER_ID"
-cat "$BASE/hello.txt"                         # hello
-OFFSET=$(./kfuse checkpoint --lower "$BASE" --lower-id "$LOWER_ID")
-CHILD=$(./kfuse session branch "$SID" --to "$OFFSET" \
-  --lower "$BASE" --lower-id "$LOWER_ID")
-./kfuse umount --lower "$BASE" --lower-id "$LOWER_ID"
-
-./kfuse mount "$CHILD" --lower "$BASE" --lower-id "$LOWER_ID"
-printf 'child\n' >> "$BASE/hello.txt"
 cat "$BASE/hello.txt"
-# hello
-# child
-./kfuse umount --lower "$BASE" --lower-id "$LOWER_ID"
-
-./kfuse mount "$SID" --lower "$BASE" --lower-id "$LOWER_ID"
-cat "$BASE/hello.txt"                         # hello
 ./kfuse umount --lower "$BASE" --lower-id "$LOWER_ID"
 ```
 
-The parent session keeps its checkpointed contents while the child evolves
-independently. Save the lower ID, session IDs, storage prefix, and the exact
-mount command if you need to resume later.
-
-`kfuse session select` records a local convenience default only. Use an explicit
-session ID when moving across hosts or scripts.
-
-## Run in a locally built image
-
-The release Dockerfile builds a Linux runtime image containing `kfuse` and
-`fuse3`. Build it locally rather than assuming a published image tag exists:
-
-```sh
-docker build -t kfuse:local .
-```
-
-Create the session, then start a named foreground container. The mount lives in
-the container's mount namespace; use `docker exec` to inspect or modify it. Do
-not assume the mounted view appears at the host's bind-mount path.
-
-```sh
-BASE=/tmp/kfuse-lower
-LOWER_ID=my-first-lower
-
-SID=$(docker run --rm --env-file .env \
-  -v "$BASE:/work/lower" \
-  kfuse:local session new --lower /work/lower --lower-id "$LOWER_ID" | tail -n1)
-
-docker run -d --name kfuse-mount --privileged --device /dev/fuse \
-  --env-file .env \
-  -v "$BASE:/work/lower" -v kfuse-state:/var/lib/kfuse \
-  kfuse:local mount --foreground "$SID" --lower /work/lower --lower-id "$LOWER_ID"
-
-docker exec kfuse-mount sh -c 'printf "hello\n" > /work/lower/hello.txt'
-docker exec kfuse-mount kfuse umount --lower /work/lower --lower-id "$LOWER_ID"
-docker rm kfuse-mount
-```
-
-If startup fails, inspect `docker logs kfuse-mount` before removing the named
-container.
-
-The named volume preserves the local daemon state used by `umount`, `status`,
-and the control socket. Remote session history remains in Kafka and S3. To
-resume the session later, keep the same lower ID and storage configuration and
-use the saved session ID.
+The file should still contain `hello`. Save the lower directory, lower ID,
+session ID, and storage configuration to resume later. On another host, supply
+an equivalent base tree with the same lower ID; the session ID alone does not
+capture the base contents. Never share a lower ID between unrelated base trees.
+If you started the local stack, stop it with `make local-down` when finished.
 
 ## How it works
 
@@ -231,34 +208,22 @@ use the saved session ID.
 
 ## Limits
 
-- Linux FUSE only; release builds target `linux/amd64` and `linux/arm64`. Build
-  the binary or image locally unless a published release supplies a verified
-  artifact for your platform.
+- Linux FUSE only; release builds target `linux/amd64` and `linux/arm64`.
 - Supported filesystem behavior covers regular files, directories, symlinks,
   rename, truncate, attributes, and fsync. Hardlinks, xattrs, ACLs, advisory
   locks, and device/socket/FIFO files are outside the current scope.
 - Branching from an old offset requires the parent records and any needed state
   image to remain available. Kafka retention and retained S3 objects bound how
-  far back a branch can go.
+  far back a branch can go; verify your topic's configured retention rather
+  than assuming unlimited history.
 - Blob cleanup and deletion of retained remote history are not automatic; plan
-  bucket lifecycle and cost controls accordingly.
-
-## More examples and references
-
-| Path | What it shows |
-|---|---|
-| [`examples/local`](examples/local/README.md) | POSIX walkthrough against local Apache Kafka KRaft + MinIO; also runs against hosted creds via `run.sh --creds` |
-| [`examples/e2b-sandbox`](examples/e2b-sandbox/README.md) | Resume and branching across disposable E2B sandboxes |
-| [`examples/README.md`](examples/README.md) | Credentials and expected pass output for the demos |
-| [`.env.example`](.env.example) | Canonical configuration names and defaults |
-| [`docs/design.md`](docs/design.md) | Design model and shipped implementation notes |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Build, test, integration-test, and contribution workflow |
+  bucket lifecycle and cost controls without expiring objects needed by sessions.
 
 ## Troubleshooting
 
 | Symptom | Next check |
 |---|---|
-| `missing required env: ...` | Fill `.env` or export the canonical variables required by the entry point. |
+| `missing required env: ...` | Fill `.env` for hosted examples or export the variables required by the CLI. The local demo supplies its own configuration. |
 | SASL error `[58]` | Use a Confluent Cloud **Kafka API key**, not a Global/org key. |
 | `mount never became live` | Use Linux FUSE support or a privileged Linux container with `/dev/fuse`. |
 | `session locked` | Another live mount owns the session lease; unmount it or wait for lease expiry. |
@@ -266,8 +231,8 @@ use the saved session ID.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Security reports go through
-[SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for build, test, and contribution
+instructions. Security reports go through [SECURITY.md](SECURITY.md).
 
 ## License
 

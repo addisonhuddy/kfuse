@@ -12,9 +12,19 @@ and remounts the session when the current sandbox stops. `uv run main.py
 --repl` exposes the same controller as an interactive prompt (`:restart`
 moves the session to a fresh sandbox).
 
+## Prerequisites
+
+- Go 1.26.4 or newer on `PATH`; the launcher cross-compiles the Linux binary.
+- uv and Python 3.10 or newer.
+- An E2B account and Kafka/S3 services reachable from the sandboxes.
+
+No local Docker or FUSE setup is required: the mount runs inside E2B.
+
 ## Credentials
 
-`uv run` reads the repo-root `.env` when it exists. Required names are:
+The launcher reads the repo-root `.env` when it exists; non-empty exported
+variables take precedence. Copy [the template](../../.env.example) if needed
+and uncomment `E2B_KEY`. For Confluent Cloud and AWS S3, configure:
 
 ```
 BOOTSTRAP_SERVER=...
@@ -43,7 +53,13 @@ Each run generates one unique `S3_PREFIX`, shared by the sandboxes in
 that run. The Linux kfuse binary is uploaded to each default E2B sandbox at
 runtime, and the lower directory is prepared before the first mount. The
 default E2B base template already includes FUSE support, so no custom template
-is required.
+is required. A successful scripted run prints a branch summary followed by
+`COMPLETE`. In the interactive prompt, use `:restart` to move the session to a
+fresh sandbox and `exit` to quit.
+
+The demo creates billable cloud resources. It closes its sandboxes when done,
+but retains Kafka records and S3 objects; stopping the demo does not delete
+remote session history.
 
 ## Session handoff
 
