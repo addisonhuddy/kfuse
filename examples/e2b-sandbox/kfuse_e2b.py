@@ -66,7 +66,11 @@ def load_env(creds: Path | None = None) -> dict[str, str]:
     """Load credentials using the canonical names shared by all examples."""
 
     repo_root = Path(__file__).resolve().parents[2]
-    env_file = repo_root / ".env" if creds is None else creds
+    env_file = (
+        Path(os.environ.get("KFUSE_ENV_FILE", repo_root / ".env"))
+        if creds is None
+        else creds
+    )
     values = _read_env_file(env_file)
     values.update({key: value for key, value in os.environ.items() if value})
 

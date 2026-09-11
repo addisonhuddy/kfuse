@@ -37,6 +37,20 @@ curl -sSL https://github.com/addisonhuddy/kfuse/releases/download/v0.1.0/kfuse_0
 
 Release archives include `LICENSE`, `NOTICE`, and `THIRD_PARTY_LICENSES.md`.
 
+#### install.sh
+
+From a checkout, install the latest release with checksum verification:
+
+```sh
+./install.sh --release
+./install.sh --release --version v0.1.0
+./install.sh --release --dest "$HOME/.local/bin"
+```
+
+The installer uses `/usr/local/bin` when writable, otherwise `~/.local/bin`, and
+fails on release download or checksum errors instead of falling back to a source
+build.
+
 ### Docker
 
 ```sh
@@ -50,20 +64,20 @@ the demo below).
 
 ### Source
 
-To build the CLI yourself, use Go 1.26.4 or newer. On Linux:
+To build and install the CLI from source, use Go 1.26.4 or newer. On Linux:
 
 ```sh
-go build -o kfuse ./cmd/kfuse
-./kfuse --help
+./install.sh
 ```
 
 To build on another host for a Linux sandbox:
 
 ```sh
-GOOS=linux GOARCH=amd64 go build -o kfuse ./cmd/kfuse
+GOOS=linux GOARCH=amd64 ./install.sh --output dist/kfuse
 ```
 
-Use `GOARCH=arm64` for an arm64 runtime.
+Native `./install.sh` installs from source. Cross builds are written to a file,
+not installed on this host. Use `GOARCH=arm64` for an arm64 runtime.
 
 ## Examples
 
@@ -165,8 +179,14 @@ set -a; . examples/local/local.env; set +a
 ```
 
 For hosted storage, fill in `.env` using [.env.example](.env.example), then export
-it with `set -a; . ./.env; set +a`. The CLI reads exported environment variables;
-it does not load `.env` automatically.
+it with `set -a; . ./.env; set +a`.
+
+**Configuration loading:** the `kfuse` binary and Docker image read only exported
+environment variables and never load `.env`. `examples/local/run.sh`, `up.sh`,
+and `demo.sh` load the repo-root `.env` (or `KFUSE_ENV_FILE`) via
+`examples/local/env.sh`; the E2B example uses the same loading rules. Already-
+exported variables take precedence over `.env` values. There are no alias names:
+use exactly the names in `.env.example`.
 
 Create a disposable lower and prove that a write survives remounting. Keep your
 shell outside the lower directory to avoid a busy unmount:

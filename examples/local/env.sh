@@ -40,7 +40,7 @@ kfuse_apply_defaults() {
 }
 
 kfuse_require_env() {
-  local name caller=bash joined="" missing=() index
+  local name caller=bash joined="" missing=() placeholder=() index value
   for ((index = 1; index < ${#BASH_SOURCE[@]}; index++)); do
     case "${BASH_SOURCE[index]}" in
       */env.sh|env.sh) ;;
@@ -50,16 +50,24 @@ kfuse_require_env() {
   caller=${caller##*/}
   caller=${caller:-bash}
   for name in "$@"; do
-    [ -n "${!name:-}" ] || missing+=("$name")
+    value=${!name:-}
+    if [ -z "$value" ]; then
+      missing+=("$name")
+    elif [[ "$value" == *YOUR_* || "$value" == *'<'*'>'* || "$value" == *changeme* ]]; then
+      placeholder+=("$name")
+    fi
   done
-  if [ "${#missing[@]}" -gt 0 ]; then
-    for name in "${missing[@]}"; do
-      [ -n "$joined" ] && joined+=", "
-      joined+=$name
-    done
+  for name in "${missing[@]}"; do
+    [ -n "$joined" ] && joined+=", "
+    joined+=$name
+  done
+  if [ -n "$joined" ]; then
     echo "$caller: missing required env: $joined (set them in .env or the environment)" >&2
-    return 1
   fi
+  for name in "${placeholder[@]}"; do
+    echo "$caller: placeholder value for env: $name (edit .env)" >&2
+  done
+  [ "${#missing[@]}" -eq 0 ] && [ "${#placeholder[@]}" -eq 0 ]
 }
 
 kfuse_env_init() {

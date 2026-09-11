@@ -42,6 +42,7 @@ Go 1.26.4 or newer (see `go.mod`). The `Makefile` wraps the usual commands:
 make              # fmt-check + vet + lint + build + test
 make build        # go build -o kfuse ./cmd/kfuse
 make test         # unit tests, no credentials needed
+make test-install # installer tests, no network or credentials needed
 make vet lint fmt  # go vet ./... ; golangci-lint run ./... ; gofmt -w .
 make integration-test  # needs a repo-root .env (see below)
 make docker-build # build the release Dockerfile locally
