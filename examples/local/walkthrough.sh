@@ -9,26 +9,57 @@
 #   *      — exec through (e.g. `kfuse mount`)
 set -euo pipefail
 
+# Preflight helpers (copied into the image by the Dockerfile).
+# shellcheck source=/dev/null
+. /preflight.sh
+
+LOG_DIR=/tmp/kfuse-demo
+mkdir -p "$LOG_DIR"
+MOUNT_N=0
+
 cd /work/lower
 
 # --- shared helpers ---------------------------------------------------------
 
-wait_mounted() {
-  for _ in $(seq 1 60); do
+wait_mounted() { # wait_mounted <logfile>
+  local limit=${KFUSE_MOUNT_WAIT:-30} waited=0 log=$1
+  while [ "$waited" -lt $((limit * 2)) ]; do
     if grep -q " /work/lower " /proc/mounts 2>/dev/null; then
       return 0
     fi
+    if ! kill -0 "$MPID" 2>/dev/null; then
+      break
+    fi
     sleep 0.5
+    waited=$((waited + 1))
   done
-  echo "FAIL: mount never became live" >&2
+  echo "FAIL: stage=mount: mount did not become live within ${limit}s" >&2
+  kfuse_redact "$log" | tail -20 >&2
+  kfuse_classify_failure "$log" >&2
   exit 1
+}
+
+kf() { # kf <kfuse args...> — stderr captured, classified on failure
+  if kfuse "$@" 2>>"$LOG_DIR/cli.log"; then
+    return 0
+  fi
+  kfuse_redact "$LOG_DIR/cli.log" | tail -20 >&2
+  kfuse_classify_failure "$LOG_DIR/cli.log" >&2
+  exit 1
+}
+
+preflight_mount() {
+  kfuse_preflight_dirs /work/lower "$KF_STATE_DIR" || exit 1
+  test -c /dev/fuse || { echo "stage=mount: /dev/fuse not present in the container; run with --privileged --device /dev/fuse" >&2; exit 1; }
 }
 
 mount_session() { # mount_session <sid> <outfile>
   cd /
-  kfuse mount "$1" --foreground --lower /work/lower >"$2" &
+  MOUNT_N=$((MOUNT_N + 1))
+  local log="$LOG_DIR/mount-$MOUNT_N.log"
+  kfuse mount "$1" --foreground --lower /work/lower >"$2" 2>"$log" &
   MPID=$!
-  wait_mounted
+  wait_mounted "$log"
   cd /work/lower
 }
 
@@ -52,6 +83,7 @@ make_lower_fixture() {
 
 mode_demo() {
   local STEP=0 TOTAL=42 SID MPID
+  preflight_mount
 
   step() {
     STEP=$((STEP + 1))
@@ -80,7 +112,7 @@ mode_demo() {
   ok
 
   step "Create a new session"
-  SID=$(kfuse session new)
+  SID=$(kf session new)
   [ -n "$SID" ] || fail "empty session id"
   printf '      session id %s\n' "$SID"
   ok
@@ -275,7 +307,7 @@ mode_demo() {
 
   step "Branch a child session (kfuse session branch)"
   local CHILD_SID
-  CHILD_SID=$(kfuse session branch "$SID")
+  CHILD_SID=$(kf session branch "$SID")
   [ -n "$CHILD_SID" ] || fail "empty child session id"
   mount_session "$CHILD_SID" /tmp/mount_child.out
   expect_eq "child sees parent sparse file" "$(cat sparse.txt)" "0123456789XXXXXfghijklmnopqrstuvwxyz"
@@ -293,7 +325,7 @@ mode_demo() {
 
   step "Force a state image checkpoint (kfuse checkpoint)"
   mount_session "$SID" /tmp/mount_ckpt.out
-  CKPT_OFF=$(kfuse checkpoint "$SID")
+  CKPT_OFF=$(kf checkpoint "$SID")
   [ -n "$CKPT_OFF" ] || fail "empty checkpoint offset"
   printf "post checkpoint write" > post_ckpt.txt
   expect_eq "post checkpoint write visible" "$(cat post_ckpt.txt)" "post checkpoint write"
@@ -309,7 +341,7 @@ mode_demo() {
 
   step "Branch at a checkpoint offset (time travel)"
   local CHILD2_SID
-  CHILD2_SID=$(kfuse session branch "$SID" --to "$CKPT_OFF")
+  CHILD2_SID=$(kf session branch "$SID" --to "$CKPT_OFF")
   [ -n "$CHILD2_SID" ] || fail "empty time-travel child id"
   mount_session "$CHILD2_SID" /tmp/mount_child2.out
   expect_eq "pre-checkpoint file present in child" "$(cat sparse.txt)" "0123456789XXXXXfghijklmnopqrstuvwxyz"
@@ -319,7 +351,7 @@ mode_demo() {
 
   step "List sessions for this lower (kfuse session ls)"
   local LS_OUT
-  LS_OUT=$(kfuse session ls)
+  LS_OUT=$(kf session ls)
   printf '%s\n' "$LS_OUT" | grep -qx "$SID" || fail "session ls missing parent %s" "$SID"
   printf '%s\n' "$LS_OUT" | grep -qx "$CHILD_SID" || fail "session ls missing child %s" "$CHILD_SID"
   printf '%s\n' "$LS_OUT" | grep -qx "$CHILD2_SID" || fail "session ls missing time-travel child %s" "$CHILD2_SID"
@@ -367,10 +399,11 @@ mode_demo() {
 
 mode_crosshost() {
   local SID
+  preflight_mount
   make_lower_fixture
   case "${CROSS_STEP:-new}" in
     new)
-      SID=$(kfuse session new)
+      SID=$(kf session new)
       mount_session "$SID" /tmp/mount.out
       printf "hello from host A" > marker.txt
       [ "$(cat marker.txt)" = "hello from host A" ] || { echo "FAIL: marker write"; exit 1; }
@@ -407,9 +440,10 @@ mode_crosshost() {
 # --- shell: interactive -------------------------------------------------------
 
 mode_shell() {
+  preflight_mount
   make_lower_fixture
   local SID
-  SID=$(kfuse session new)
+  SID=$(kf session new)
   mount_session "$SID" /tmp/mount.out
   trap unmount_session EXIT
   cat <<EOF

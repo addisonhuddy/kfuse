@@ -2,11 +2,12 @@
 # Start the local Kafka + MinIO stack and wait until it is usable.
 set -euo pipefail
 
-DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=examples/local/preflight.sh
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/preflight.sh"
+DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 COMPOSE=(docker compose -f "$DIR/docker-compose.yaml")
 
-command -v docker >/dev/null || { echo "local-up: docker is required" >&2; exit 1; }
-docker compose version >/dev/null 2>&1 || { echo "local-up: docker compose v2 is required" >&2; exit 1; }
+kfuse_preflight_docker --needs-compose || { echo "local-up: preflight failed; fix the stage above and re-run" >&2; exit 1; }
 command -v curl >/dev/null || { echo "local-up: curl is required for readiness checks" >&2; exit 1; }
 
 set -a
@@ -18,8 +19,9 @@ set +a
 
 "${COMPOSE[@]}" up -d kafka minio
 
+WAIT_S=${KFUSE_UP_WAIT:-60}
 ready=0
-for _ in $(seq 1 60); do
+for _ in $(seq 1 "$WAIT_S"); do
   if "${COMPOSE[@]}" exec -T kafka /opt/kafka/bin/kafka-topics.sh \
     --bootstrap-server 127.0.0.1:9092 --list >/dev/null 2>&1; then
     ready=1
@@ -28,12 +30,13 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 if [ "$ready" != 1 ]; then
-  echo "local-up: Kafka did not become ready" >&2
+  echo "local-up: Kafka did not become ready within ${WAIT_S}s" >&2
+  echo "next: docker compose -f examples/local/docker-compose.yaml logs kafka|minio" >&2
   exit 1
 fi
 
 ready=0
-for _ in $(seq 1 60); do
+for _ in $(seq 1 "$WAIT_S"); do
   if curl -fsS "$S3_ENDPOINT/minio/health/live" >/dev/null 2>&1; then
     ready=1
     break
@@ -41,7 +44,8 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 if [ "$ready" != 1 ]; then
-  echo "local-up: MinIO did not become ready" >&2
+  echo "local-up: MinIO did not become ready within ${WAIT_S}s" >&2
+  echo "next: docker compose -f examples/local/docker-compose.yaml logs kafka|minio" >&2
   exit 1
 fi
 

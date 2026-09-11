@@ -53,7 +53,8 @@ kfuse_require_env() {
     value=${!name:-}
     if [ -z "$value" ]; then
       missing+=("$name")
-    elif [[ "$value" == *YOUR_* || "$value" == *'<'*'>'* || "$value" == *changeme* ]]; then
+    elif [[ "${value,,}" == *your_* || "$value" == *'<'*'>'* ||
+            "${value,,}" == *changeme* || "${value,,}" == *example.com* ]]; then
       placeholder+=("$name")
     fi
   done

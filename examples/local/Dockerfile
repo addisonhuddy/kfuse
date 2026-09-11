@@ -16,6 +16,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends fuse3 ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /out/kfuse /usr/local/bin/kfuse
+COPY examples/local/preflight.sh /preflight.sh
 COPY examples/local/walkthrough.sh /demo.sh
 RUN chmod +x /demo.sh && mkdir -p /work/lower
 WORKDIR /work/lower
