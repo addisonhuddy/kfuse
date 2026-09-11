@@ -17,6 +17,7 @@ jobs:
       - run: make fmt-check
       - run: make vet
       - run: make test-install
+      - run: make test-preflight
       - uses: golangci/golangci-lint-action@v8
         with:
           version: v2.13.2

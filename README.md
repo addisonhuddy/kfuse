@@ -253,6 +253,11 @@ If you started the local stack, stop it with `make local-down` when finished.
 | `mount never became live` | Use Linux FUSE support or a privileged Linux container with `/dev/fuse`. |
 | `session locked` | Another live mount owns the session lease; unmount it or wait for lease expiry. |
 | `Device or resource busy` on unmount | Close files and move shells/processes out of the mounted lower before `kfuse umount`. |
+| `stage=auth` in launcher output | Kafka SASL or S3 credentials rejected; the launcher prints the next action — see [examples/local/README.md](examples/local/README.md#failure-stages). |
+| `stage=broker` in launcher output | Broker unreachable; check `BOOTSTRAP_SERVER`, egress, and `KAFKA_TLS` — see the failure-stages table. |
+| `stage=bucket` in launcher output | S3 bucket missing or wrong region/endpoint — see the failure-stages table. |
+| `stage=topic` in launcher output | `KAFKA_TOPIC` missing; create it or grant Create/Describe ACLs — see the failure-stages table. |
+| `stage=fuse` in launcher output | No usable FUSE on the Docker host — see the failure-stages table. |
 
 ## Contributing
 

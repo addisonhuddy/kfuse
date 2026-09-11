@@ -60,6 +60,48 @@ docker run --rm --privileged --device /dev/fuse \
   --env-file <creds.env> kfuse-local-demo          # also: shell | bash
 ```
 
+## Preflight
+
+Before building or mounting anything, `run.sh` runs read-only checks
+(`--skip-preflight` disables them):
+
+- **host-prereqs** — the docker CLI exists and the daemon answers
+  `docker info` within `KFUSE_PREFLIGHT_TIMEOUT` (15s).
+- **fuse** — FUSE is verified where the mount actually runs: on a Linux
+  Docker host that is this machine, `/dev/fuse` must exist (override the
+  path with `KFUSE_FUSE_DEV`); otherwise (macOS, WSL, Docker Desktop) the
+  engine itself is probed with a read-only `docker run --device /dev/fuse`
+  on `busybox:stable`, which is the only image pull preflight performs.
+- **config** — required variables are present and non-placeholder, and
+  `KAFKA_TLS`, `S3_PATH_STYLE`, `KAFKA_PARTITIONS`, `S3_ENDPOINT`, the
+  `KAFKA_SASL_*` pair, and `KF_LOWER_ID` match the shapes
+  `internal/config` enforces.
+
+The only remote writes the demo makes are the session records it commits
+under `S3_PREFIX` and the Kafka topic events for those sessions.
+
+## Failure stages
+
+On failure the launchers print a `stage=<name>` line naming the failing
+layer and the next action:
+
+| stage | meaning | next action | log |
+|---|---|---|---|
+| `host-prereqs` | docker CLI/daemon/compose missing | install or start Docker | terminal output |
+| `config` | missing/placeholder/malformed env | fix the named variables in `.env` (see `.env.example`) | terminal output |
+| `auth` | Kafka SASL or S3 credential rejected | use a cluster Kafka API key (not Global); check S3 key permissions | `/tmp/kfuse-demo/*.log` in the container |
+| `bucket` | S3 bucket missing | create `S3_BUCKET` or fix name/`S3_REGION`/`S3_ENDPOINT` | same |
+| `lease` | another live mount holds the session | `kfuse umount` there or wait for the lease TTL | same |
+| `topic` | Kafka topic missing | create `KAFKA_TOPIC` with `KAFKA_PARTITIONS` partitions or grant ACLs | same |
+| `broker` | cannot reach the broker | check `BOOTSTRAP_SERVER`, egress, `KAFKA_TLS` | same |
+| `mount`/`fuse` | no usable FUSE | privileged Linux container with `--device /dev/fuse` | `/tmp/kfuse-demo/mount-*.log` |
+| `unknown` | unclassified | inspect the log | same |
+
+Daemon logs live at `$KF_STATE_DIR/<lower-id>/daemon.log` inside the
+container (`/var/lib/kfuse` by default). For the local stack itself use
+`docker compose -f examples/local/docker-compose.yaml logs kafka|minio`.
+We never recommend disabling TLS or checksum verification as a fix.
+
 ## Use kfuse directly
 
 ```sh
@@ -76,21 +118,39 @@ Use another terminal to write through the mount, then unmount or stop the
 foreground mount. Named volumes persist both Kafka records and MinIO objects
 across stack restarts.
 
-## Stop
+## Unmount
+
+Inside `--shell`, `exit` unmounts cleanly; against a standalone mount use
+`kfuse umount`. To stop the local stack without deleting data:
 
 ```sh
 make local-down
 ```
 
-To delete both local volumes and all local records/objects:
+## Busy mount
+
+`Device or resource busy` on unmount means a shell or process still has the
+lower open: move shells out of the directory, check `fuser -vm /work/lower`,
+and only as a last resort `fusermount3 -uz`.
+
+## Recovery
+
+Sessions are durable: re-mount the same session id to resume after a crash
+or a stopped sandbox. If another live mount holds the lease (`stage=lease`),
+unmount it there or wait for the lease TTL.
+
+## Destructive reset
 
 ```sh
-./examples/local/down.sh --volumes
+./examples/local/down.sh --volumes --yes
 ```
 
-Kafka runs with a fixed local cluster ID and MinIO keeps the bucket in a named
-volume. Deleting only one volume creates an inconsistent local history and
-should be treated as a fresh environment.
+This deletes both named volumes — all local Kafka records and every local
+MinIO object — and asks for interactive confirmation unless `--yes` is
+given. It never touches hosted buckets or topics. Kafka runs with a fixed
+local cluster ID and MinIO keeps the bucket in a named volume; deleting
+only one volume creates an inconsistent local history and should be
+treated as a fresh environment.
 
 ## Configuration shape
 

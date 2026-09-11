@@ -7,6 +7,7 @@
 #   ./examples/local/run.sh --shell             interactive mount + bash prompt
 #   ./examples/local/run.sh --creds <file>      credentials file (default .env)
 #   ./examples/local/run.sh --local             reach host-published services
+#   ./examples/local/run.sh --skip-preflight    skip host/config/FUSE checks
 #
 # The credentials file uses the canonical Kafka and S3-compatible names
 # (BOOTSTRAP_SERVER, KAFKA_SASL_USERNAME, S3_ACCESS_KEY, ...).
@@ -16,6 +17,7 @@ cd "$(dirname "$0")/../.."
 CREDS=""
 MODE=demo
 LOCAL=0
+SKIP_PREFLIGHT=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -23,8 +25,9 @@ while [ $# -gt 0 ]; do
     --cross-host) MODE=cross-host ;;
     --local) LOCAL=1 ;;
     --creds) CREDS="$2"; shift ;;
+    --skip-preflight) SKIP_PREFLIGHT=1 ;;
     -h|--help)
-      echo "usage: run.sh [--shell|--cross-host] [--local] [--creds <file>]"
+      echo "usage: run.sh [--shell|--cross-host] [--local] [--creds <file>] [--skip-preflight]"
       exit 0
       ;;
     *) echo "run.sh: unknown flag $1"; exit 1 ;;
@@ -32,12 +35,25 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-[ -z "$CREDS" ] || [ -f "$CREDS" ] ||
+[ -z "$CREDS" ] || [ -e "$CREDS" ] ||
   { echo "run.sh: credentials file $CREDS missing"; exit 1; }
+# shellcheck source=examples/local/env.sh
 source examples/local/env.sh
+# shellcheck source=examples/local/preflight.sh
+source examples/local/preflight.sh
 kfuse_load_env "${CREDS:-}"
 kfuse_apply_defaults
-kfuse_require_env BOOTSTRAP_SERVER S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET
+
+if [ "$SKIP_PREFLIGHT" != 1 ]; then
+  # shellcheck disable=SC2119
+  if ! kfuse_preflight_config ||
+     ! kfuse_preflight_docker ||
+     ! kfuse_preflight_fuse; then
+    echo "run.sh: preflight failed; fix the stage above and re-run" >&2
+    exit 1
+  fi
+  echo "run.sh: preflight ok (docker, fuse, config)"
+fi
 
 echo "run.sh: building local demo image (kfuse baked in)"
 docker build -q -f examples/local/Dockerfile -t kfuse-local-demo .
@@ -63,9 +79,15 @@ if [ "$LOCAL" = 1 ] && [ "$(uname -s)" = Linux ]; then
   NET_ARGS=(--add-host host.docker.internal:host-gateway)
 fi
 
+demo_failed() {
+  echo "run.sh: demo failed inside the container; see the stage line above. Rerun with --shell to inspect." >&2
+  exit 1
+}
+
 if [ "$MODE" = shell ]; then
   echo "run.sh: interactive session (type 'exit' to unmount and quit)"
-  exec docker run -it --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo shell
+  docker run -it --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo shell || demo_failed
+  exit 0
 fi
 
 if [ "$MODE" = cross-host ]; then
@@ -78,18 +100,18 @@ if [ "$MODE" = cross-host ]; then
   echo "run.sh: session $SID"
 
   docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
-    -e CROSS_STEP=resume -e CROSS_SID="$SID" kfuse-local-demo cross-host
+    -e CROSS_STEP=resume -e CROSS_SID="$SID" kfuse-local-demo cross-host || demo_failed
 
   docker run -d --rm --name kfuse-hold --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
     -e CROSS_STEP=hold -e CROSS_SID="$SID" kfuse-local-demo cross-host >/dev/null
   sleep 3
 
   docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
-    -e CROSS_STEP=conflict -e CROSS_SID="$SID" kfuse-local-demo cross-host
+    -e CROSS_STEP=conflict -e CROSS_SID="$SID" kfuse-local-demo cross-host || demo_failed
 
   docker stop kfuse-hold >/dev/null
   echo "CROSS-HOST PASS"
   exit 0
 fi
 
-exec docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo "$MODE"
+docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo "$MODE" || demo_failed
