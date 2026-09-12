@@ -168,7 +168,7 @@ func ReadSelected(stateDir, lowerID string) (string, error) {
 	return strings.TrimSpace(string(b)), nil
 }
 
-// WriteSelected records the selected session id (local only, design §11.4).
+// WriteSelected records the selected session id in the local state directory.
 func WriteSelected(stateDir, lowerID, sessionID string) error {
 	p := SelectedPath(stateDir, lowerID)
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
