@@ -103,10 +103,33 @@ jobs:
           S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
-          if [ -z "$BOOTSTRAP_SERVER" ] || [ -z "$S3_BUCKET" ]; then
-            echo "integration secrets not configured; skipping"
+          skip() {
+            echo "::warning::$1; skipping hosted integration tests"
             echo "ready=false" >> "$GITHUB_OUTPUT"
             exit 0
+          }
+          # Same placeholder shapes as kfuse_require_env in
+          # examples/local/env.sh; values are never printed.
+          placeholder() {
+            local v=${1,,}
+            [[ "$v" == *your_* || "$v" == *'<'*'>'* ||
+               "$v" == *changeme* || "$v" == *example.com* ]]
+          }
+          for name in BOOTSTRAP_SERVER KAFKA_SASL_USERNAME KAFKA_SASL_PASSWORD \
+                      S3_REGION S3_ACCESS_KEY S3_SECRET_KEY S3_BUCKET; do
+            v=${!name:-}
+            if [ -z "$v" ]; then
+              skip "secret $name is not set"
+            elif placeholder "$v"; then
+              skip "secret $name still has its template placeholder value"
+            fi
+          done
+          # Probe the bootstrap broker: an unreachable cluster (dead, rotated,
+          # or placeholder DNS) would otherwise fail every push to main while
+          # covering nothing local-integration doesn't already cover.
+          hostport=${BOOTSTRAP_SERVER%%,*}
+          if ! timeout 8 bash -c "</dev/tcp/${hostport%:*}/${hostport##*:}" 2>/dev/null; then
+            skip "Kafka bootstrap server is unreachable from CI"
           fi
           {
             echo "BOOTSTRAP_SERVER=$BOOTSTRAP_SERVER"
