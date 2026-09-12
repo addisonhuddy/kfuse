@@ -18,7 +18,7 @@ jobs:
       - run: make vet
       - run: make test-install
       - run: make test-preflight
-      - uses: golangci/golangci-lint-action@v8
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.13.2
       - run: make build
