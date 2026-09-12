@@ -4,10 +4,10 @@ go 1.26.8
 
 require (
 	github.com/IBM/sarama v1.60.2
-	github.com/aws/aws-sdk-go-v2 v1.43.5
+	github.com/aws/aws-sdk-go-v2 v1.46.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.35
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.1
-	github.com/aws/smithy-go v1.27.7
+	github.com/aws/smithy-go v1.28.1
 	github.com/hanwen/go-fuse/v2 v2.11.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/sys v0.47.0
