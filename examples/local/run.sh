@@ -6,7 +6,7 @@
 #   ./examples/local/run.sh                     scripted walkthrough
 #   ./examples/local/run.sh --shell             interactive mount + bash prompt
 #   ./examples/local/run.sh --creds <file>      credentials file (default .env)
-#   ./examples/local/run.sh --local             reach host-published services
+#   ./examples/local/run.sh --local             join the private kfuse-local Docker network
 #   ./examples/local/run.sh --skip-preflight    skip host/config/FUSE checks
 #
 # The credentials file uses the canonical Kafka and S3-compatible names
@@ -76,7 +76,7 @@ ENV_ARGS=(
 
 NET_ARGS=()
 if [ "$LOCAL" = 1 ] && [ "$(uname -s)" = Linux ]; then
-  NET_ARGS=(--add-host host.docker.internal:host-gateway)
+  NET_ARGS=(--network kfuse-local)
 fi
 
 demo_failed() {

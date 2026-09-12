@@ -75,6 +75,7 @@ jobs:
         with:
           go-version-file: go.mod
       - run: ./examples/local/up.sh
+      - run: make test-local-network
       - run: cp examples/local/local.env .env
       - run: make integration-test
       - if: always()

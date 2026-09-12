@@ -53,8 +53,8 @@ fi
 
 cat <<EOF
 local kfuse stack is up
-  Kafka: $BOOTSTRAP_SERVER (containers: host.docker.internal:9094)
-  S3:    $S3_ENDPOINT bucket=$S3_BUCKET
+  Kafka: $BOOTSTRAP_SERVER (loopback only; containers on the kfuse-local network: kafka:9094)
+  S3:    $S3_ENDPOINT bucket=$S3_BUCKET (containers: http://minio:9000)
   MinIO console: http://127.0.0.1:9001
 
 Load the environment with:
