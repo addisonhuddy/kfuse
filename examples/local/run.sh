@@ -9,6 +9,10 @@
 #   ./examples/local/run.sh --local             join the private kfuse-local Docker network
 #   ./examples/local/run.sh --skip-preflight    skip host/config/FUSE checks
 #
+# Set KFUSE_DEMO_LOG_DIR to a host directory to bind-mount it over the
+# container's /tmp/kfuse-demo so walkthrough logs survive the --rm container
+# (used by CI to upload failure artifacts).
+#
 # The credentials file uses the canonical Kafka and S3-compatible names
 # (BOOTSTRAP_SERVER, KAFKA_SASL_USERNAME, S3_ACCESS_KEY, ...).
 set -euo pipefail
@@ -79,6 +83,12 @@ if [ "$LOCAL" = 1 ] && [ "$(uname -s)" = Linux ]; then
   NET_ARGS=(--network kfuse-local)
 fi
 
+VOL_ARGS=()
+if [ -n "${KFUSE_DEMO_LOG_DIR:-}" ]; then
+  mkdir -p "$KFUSE_DEMO_LOG_DIR"
+  VOL_ARGS=(-v "$(cd "$KFUSE_DEMO_LOG_DIR" && pwd):/tmp/kfuse-demo")
+fi
+
 demo_failed() {
   echo "run.sh: demo failed inside the container; see the stage line above. Rerun with --shell to inspect." >&2
   exit 1
@@ -86,7 +96,7 @@ demo_failed() {
 
 if [ "$MODE" = shell ]; then
   echo "run.sh: interactive session (type 'exit' to unmount and quit)"
-  docker run -it --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo shell || demo_failed
+  docker run -it --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${VOL_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo shell || demo_failed
   exit 0
 fi
 
@@ -94,19 +104,19 @@ if [ "$MODE" = cross-host ]; then
   echo "run.sh: cross-host demo (two sandboxes, one session, shared S3 lease)"
   XHOST_ARGS=("${ENV_ARGS[@]}" -e KF_LOWER_ID=kfuse-cross-host-lower)
 
-  SID=$(docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
+  SID=$(docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${VOL_ARGS[@]}" "${XHOST_ARGS[@]}" \
     -e CROSS_STEP=new kfuse-local-demo cross-host | tail -1)
   [ -n "$SID" ] || { echo "run.sh: cross-host new produced no session id"; exit 1; }
   echo "run.sh: session $SID"
 
-  docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
+  docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${VOL_ARGS[@]}" "${XHOST_ARGS[@]}" \
     -e CROSS_STEP=resume -e CROSS_SID="$SID" kfuse-local-demo cross-host || demo_failed
 
-  docker run -d --rm --name kfuse-hold --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
+  docker run -d --rm --name kfuse-hold --privileged --device /dev/fuse "${NET_ARGS[@]}" "${VOL_ARGS[@]}" "${XHOST_ARGS[@]}" \
     -e CROSS_STEP=hold -e CROSS_SID="$SID" kfuse-local-demo cross-host >/dev/null
   sleep 3
 
-  docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${XHOST_ARGS[@]}" \
+  docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${VOL_ARGS[@]}" "${XHOST_ARGS[@]}" \
     -e CROSS_STEP=conflict -e CROSS_SID="$SID" kfuse-local-demo cross-host || demo_failed
 
   docker stop kfuse-hold >/dev/null
@@ -114,4 +124,4 @@ if [ "$MODE" = cross-host ]; then
   exit 0
 fi
 
-docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo "$MODE" || demo_failed
+docker run --rm --privileged --device /dev/fuse "${NET_ARGS[@]}" "${VOL_ARGS[@]}" "${ENV_ARGS[@]}" kfuse-local-demo "$MODE" || demo_failed
