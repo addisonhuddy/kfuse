@@ -7,6 +7,8 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends fuse3 ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY $TARGETPLATFORM/kfuse /usr/local/bin/kfuse
+COPY LICENSE NOTICE THIRD_PARTY_LICENSES.md /usr/share/doc/kfuse/
+COPY third_party/ /usr/share/doc/kfuse/third_party/
 RUN mkdir -p /work/lower /var/lib/kfuse
 WORKDIR /work/lower
 ENV KF_STATE_DIR=/var/lib/kfuse

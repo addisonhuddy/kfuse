@@ -33,6 +33,7 @@ archives:
       - NOTICE
       - THIRD_PARTY_LICENSES.md
       - README.md
+      - third_party/
 
 checksum:
   name_template: checksums.txt
@@ -41,6 +42,12 @@ checksum:
 dockers_v2:
   - id: kfuse
     dockerfile: Dockerfile.goreleaser
+    # License/notice material lands in the image via Dockerfile.goreleaser.
+    extra_files:
+      - LICENSE
+      - NOTICE
+      - THIRD_PARTY_LICENSES.md
+      - third_party/
     images:
       - addisonhuddy/kfuse
     tags:
