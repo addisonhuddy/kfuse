@@ -5,11 +5,18 @@ depends on, and their licenses, are listed below. All are permissive and
 compatible with Apache-2.0; `hashicorp/go-uuid` is MPL-2.0, which applies
 only to that module's own source files and is used unmodified.
 
-Regenerate this table with:
+The full license/notice texts for every dependency are collected under
+`third_party/` (one directory per module; MPL-2.0 modules also carry their
+own source files, as that license requires). `third_party/` is committed to
+the repo and shipped inside release archives and the runtime image at
+`/usr/share/doc/kfuse/third_party/`.
+
+Regenerate `third_party/` (and re-run `go-licenses report` to refresh this
+table) with:
 
 ```sh
-go install github.com/google/go-licenses/v2@latest
-go-licenses report ./... | grep -v addisonhuddy/kfuse | sort
+make install-tools   # pinned govulncheck + go-licenses
+make licenses
 ```
 
 | Module | License |
