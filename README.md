@@ -251,6 +251,8 @@ an equivalent base tree with the same lower ID; the session ID alone does not
 capture the base contents. Never share a lower ID between unrelated base trees.
 If you started the local stack, stop it with `make local-down` when finished.
 
+The kfuse CLI interface was inspired by [Modal's Overeasy](https://github.com/modal-labs/overeasy).
+
 ## How it works
 
 - The lower tree remains read-only. The session's in-memory upper supplies the
