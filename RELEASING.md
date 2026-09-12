@@ -4,8 +4,8 @@ This document covers two things for maintainers:
 
 1. How to cut a release.
 2. The repository protections required before kfuse accepts public
-   contributions (issue #85), with the exact commands to apply each one and a
-   read-only verification script.
+   contributions, with the exact commands to apply each one and a read-only
+   verification script.
 
 Maintainer-only: every command below needs a token with admin access to
 `addisonhuddy/kfuse` (a fine-grained PAT with **Administration: write** plus

@@ -38,9 +38,9 @@ releases.
 
 ### Compatibility policy
 
-Proposed policy for the alpha period, pending maintainer sign-off on this
-section: kfuse does not guarantee cross-version compatibility for stored
-state. Sessions, checkpoint state images, and Kafka event records written by
+During the alpha period, kfuse does not guarantee cross-version compatibility
+for stored state. Sessions, checkpoint state images, and Kafka event records
+written by
 one release may not be readable by a different release. Resume and branch
 within the release that created the session, and treat existing remote state
 as disposable across upgrades. Breaking changes to stored formats will be
