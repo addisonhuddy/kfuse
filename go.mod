@@ -1,6 +1,6 @@
 module github.com/addisonhuddy/kfuse
 
-go 1.26.4
+go 1.26.8
 
 require (
 	github.com/IBM/sarama v1.60.2
