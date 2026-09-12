@@ -16,10 +16,9 @@ Security issues go through [SECURITY.md](SECURITY.md), not the issue tracker.
    is green.
 4. Push the branch to your fork and open a pull request against `main`. Fill
    in the PR template; link the issue if there is one.
-5. CI runs `fmt-check`, `vet`, `lint`, `build`, `test`, and a Docker build on
-   every PR. Integration tests need repository secrets and do not run for
-   forks; a maintainer will run them before merging if the change touches the
-   Kafka or S3 paths.
+5. CI runs on every PR, including forks — see "CI" below. The hosted
+   integration tests never run on pull requests; a maintainer will trigger
+   them when the change touches the Kafka or S3 paths.
 
 Keep PRs focused. Squash fixups before asking for review.
 
@@ -36,23 +35,67 @@ or DCO sign-off requirement. New Go files should carry the standard header:
 
 ## Build and test
 
-Go 1.26.4 or newer (see `go.mod`). The `Makefile` wraps the usual commands:
+Contributor development happens on Linux. You need:
+
+- Go 1.26.4 or newer (see `go.mod`);
+- `golangci-lint` v2 for `make lint` (CI pins the version in
+  `.github/workflows/ci.yml`);
+- `fuse3`/`fusermount3` and a working `/dev/fuse` for `make test-fuse` and
+  for running `kfuse mount` yourself;
+- Docker with the Compose v2 plugin (`docker compose`) for the `make local-*`
+  targets, `make test-local-network`, and the container demos.
+
+The `Makefile` wraps the usual commands:
 
 ```sh
-make              # fmt-check + vet + lint + build + test
+make              # fmt-check + vet + lint + build + test — the pre-push gate
+make fmt-check    # fail if any file needs gofmt
+make vet lint fmt # go vet ./... ; golangci-lint run ./... ; gofmt -w .
 make build        # go build -o kfuse ./cmd/kfuse
 make test         # unit tests, no credentials needed
+make test-race    # unit tests under the race detector
+make test-fuse    # real FUSE mount tests; needs Linux /dev/fuse + fusermount3
 make test-install # installer tests, no network or credentials needed
-make vet lint fmt  # go vet ./... ; golangci-lint run ./... ; gofmt -w .
-make integration-test  # needs a repo-root .env (see below)
+make test-preflight      # preflight-script tests against a fake docker CLI
+make test-local-network  # checks the local stack's loopback/private-network
+                         # wiring; needs docker + compose and python3 or jq
+make integration-test  # needs a repo-root .env (see below); the same suite
+                       # also runs against the credential-free local stack
+make local-up local-demo local-down  # local Kafka (KRaft) + MinIO stack and demo
 make docker-build # build the release Dockerfile locally
 make release-snapshot  # goreleaser --snapshot: archives + checksums in dist/
 ```
 
-CI (`.github/workflows/ci.yml`) runs `fmt-check`, `vet`, `lint`, `build`,
-`test`, and a `docker build` smoke test on every pull request. Integration
-tests only run on pushes to `main` and manual dispatch, and are skipped unless
-the repository secrets below are set.
+### Platform support
+
+kfuse mounts are Linux-only, and a native build is too: `internal/fs` uses
+Linux-only rename flags (`unix.RENAME_EXCHANGE`, `unix.RENAME_NOREPLACE`), so
+`GOOS=darwin go build ./...` does not compile. Cross-compiling *to* Linux is
+supported — `GOOS=linux GOARCH=amd64 ./install.sh --output dist/kfuse` on any
+host produces a binary for a Linux sandbox (likewise `GOARCH=arm64`). This is
+how the E2B demo builds its sandbox binary; it does not mean macOS can host a
+mount. Releases ship `linux/amd64` and `linux/arm64` binaries only.
+
+### CI
+
+CI (`.github/workflows/ci.yml`) runs on every pull request — including
+forks — and on pushes to `main`:
+
+- `unit`: `fmt-check`, `vet`, `test-install`, `test-preflight`,
+  `golangci-lint`, `build`, `test`, `test-race`;
+- `fuse`: installs `fuse3` and runs `make test-fuse` — a missing `/dev/fuse`
+  or `fusermount3` fails the job rather than skipping it;
+- `docker`: a `docker build` smoke test plus a GoReleaser `--snapshot` dry
+  run;
+- `local-integration`: starts the `examples/local` Kafka + MinIO stack
+  (`./examples/local/up.sh`), then runs `make test-local-network` and
+  `make integration-test` against it. It needs no repository secrets, so it
+  runs on fork PRs too.
+
+The hosted `integration` job runs `make integration-test` against Confluent
+Cloud and AWS S3 using repository secrets. It runs only on pushes to `main`
+and manual `workflow_dispatch` — never on pull requests — and skips cleanly
+when the secrets are not configured.
 
 ## Releases
 
@@ -83,7 +126,8 @@ Required values (the same names CI takes from repository secrets):
 tests and demos assume; the topic is created with 8 partitions if it does not
 exist. For a credential-free local run, `make local-up` starts Apache Kafka in
 single-node KRaft mode plus MinIO; `set -a; . examples/local/local.env; set +a`
-loads the local values.
+loads the local values, then `make integration-test` runs the same suite CI's
+`local-integration` job runs.
 
 ## Demos
 

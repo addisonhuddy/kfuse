@@ -24,7 +24,7 @@ import (
 	"github.com/addisonhuddy/kfuse/internal/config"
 )
 
-// KafkaOffset is the canonical "point in time" (spec §4.3).
+// KafkaOffset is the canonical "point in time" in a session's event log.
 type KafkaOffset struct {
 	Topic     string `json:"topic"`
 	Partition int32  `json:"partition"`
