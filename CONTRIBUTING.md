@@ -104,7 +104,8 @@ v0.x.y`. `.github/workflows/release.yml` runs GoReleaser, which builds
 `linux/amd64` and `linux/arm64` binaries, attaches tar.gz archives and
 `checksums.txt` to the GitHub Release, and pushes a multi-arch image to
 `docker.io/addisonhuddy/kfuse`. The workflow needs `DOCKERHUB_USERNAME` and
-`DOCKERHUB_TOKEN` repository secrets.
+`DOCKERHUB_TOKEN` repository secrets. Maintainer-side release and repository
+protections are documented in [RELEASING.md](RELEASING.md).
 
 ### Integration tests
 
