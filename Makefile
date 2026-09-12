@@ -1,4 +1,4 @@
-.PHONY: all build test test-race test-fuse test-install test-preflight integration-test local-up local-demo local-down vet lint fmt fmt-check docker-build release-snapshot clean
+.PHONY: all build test test-race test-fuse test-install test-preflight test-local-network integration-test local-up local-demo local-down vet lint fmt fmt-check docker-build release-snapshot clean
 
 BIN := kfuse
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
@@ -32,6 +32,9 @@ test-install:
 
 test-preflight:
 	bash scripts/preflight_test.sh
+
+test-local-network:
+	bash scripts/local_network_test.sh
 
 # Real FUSE mount tests (Linux, /dev/fuse + fusermount3). Elsewhere these
 # skip; here a missing mount facility fails the run instead.

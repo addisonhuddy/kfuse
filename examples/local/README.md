@@ -2,9 +2,10 @@
 
 A credential-free development stack for the real kfuse binary. It runs:
 
-- `apache/kafka` in single-node KRaft mode on `127.0.0.1:9092`, with an
-  unauthenticated plaintext listener;
-- `minio/minio` on `127.0.0.1:9000` (console on `127.0.0.1:9001`).
+- `apache/kafka` in single-node KRaft mode with its host listener bound to
+  `127.0.0.1:9092`, with an unauthenticated plaintext listener;
+- `minio/minio` with host ports bound to `127.0.0.1:9000` (console on
+  `127.0.0.1:9001`).
 
 Hosted Confluent Cloud + AWS S3 remains the preferred kfuse deployment. This
 stack exists for local development and for validating that the production
@@ -27,9 +28,9 @@ To run the full functional demo in a privileged Linux Docker container:
 make local-demo
 ```
 
-The demo uses `container.env`: Kafka advertises a second listener on
-`host.docker.internal:9094`, and MinIO is reached through
-`host.docker.internal:9000`. This still requires a Linux Docker host with
+The demo uses `container.env`: the demo container joins the private
+`kfuse-local` Docker network, Kafka advertises `kafka:9094` on it, and MinIO is
+reached at `http://minio:9000`. This still requires a Linux Docker host with
 `/dev/fuse`; Docker Desktop mount support is not currently validated.
 
 ## Walkthrough modes
@@ -48,9 +49,17 @@ It exits non-zero on the first failing step and prints
 The walkthrough covers creating and mounting a session, writes and appends,
 unlinking files, directories, symlinks, attributes, rename, sparse
 copy-on-write, resume, branching, checkpointing, and cross-host lease
-conflicts. The `--local` flag lets the container reach host-published local
-services; `--creds <file>` selects another credentials file, while exported
-environment values take precedence.
+conflicts. The `--local` flag joins the container to the private `kfuse-local`
+Docker network; `--creds <file>` selects another credentials file, while
+exported environment values take precedence.
+
+## Security model
+
+This stack is for development only. Kafka is plaintext and unauthenticated,
+and MinIO uses the committed dummy credentials in `local.env`. Nothing is
+published beyond loopback (`127.0.0.1`) and the private Docker network, so
+other hosts on the LAN cannot reach it. To expose it deliberately, edit the
+`ports:` host IPs, and never do so with these credentials.
 
 The image can also be run directly:
 

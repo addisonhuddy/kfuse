@@ -52,7 +52,7 @@ kill -TERM $!   # clean unmount; fusermount3 -u <dir> to force
 `examples/local/walkthrough.sh` is the canonical golden path — mirror its
 assertions instead of inventing new ones. On Linux Docker hosts,
 `./examples/local/demo.sh` runs that demo in a privileged container using
-`examples/local/container.env` (`host.docker.internal`).
+`examples/local/container.env` (joins the private `kfuse-local` Docker network).
 
 Shut down with `make local-down`; add `--volumes` to `examples/local/down.sh`
 when deleting the Kafka and MinIO named volumes is intended.
