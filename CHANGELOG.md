@@ -6,6 +6,10 @@ See `.goreleaser.yaml` (`changelog:` section) for the grouping rules.
 
 ## Unreleased
 
+- docs: declared public-alpha status and proposed compatibility policy (no
+  cross-version guarantee for stored sessions, checkpoints, or event records;
+  breaking changes will be flagged in release notes), and documented the
+  security/durability boundaries in README.md and SECURITY.md (#86)
 - examples: removed best-of-n, functional-demo, perf; the functional walkthrough
   now lives in examples/local (run.sh/walkthrough.sh) and runs against the
   local stack by default

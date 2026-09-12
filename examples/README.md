@@ -1,7 +1,10 @@
 # kfuse examples
 
 Two demos show how a kfuse workspace persists, resumes, and branches. Run the
-commands below from the repository root unless noted otherwise.
+commands below from the repository root unless noted otherwise. These examples
+are for evaluating alpha software: the privileged containers and disposable
+sandboxes are not a security boundary for untrusted code — see
+[Status](../README.md#status-public-alpha) in the root README.
 
 | Demo | What it shows | Successful output |
 |---|---|---|

@@ -21,8 +21,15 @@ the environment. Issues of particular interest:
 - privilege escalation or escape from the mount into the host
 - credential leakage (to logs, Kafka, S3, or the state directory)
 - data corruption or loss in the commit or checkpoint path
-- bypass of single-writer fencing (S3 lease)
+- bypass of single-writer fencing (S3 lease) beyond the best-effort behavior
+  documented in the README
+
+kfuse is a public alpha: limitations already documented there — such as the
+non-atomic S3 lease and the fact that privileged demo containers are not an
+isolation boundary — are known constraints rather than vulnerabilities.
 
 ## Supported versions
 
-Only the latest release receives security fixes.
+Only the latest release receives security fixes. During the alpha period,
+expect fixes on the newest release only; stored state compatibility across
+versions is not guaranteed (see the README compatibility policy).
