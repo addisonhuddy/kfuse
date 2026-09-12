@@ -7,6 +7,8 @@ kfuse is a branching overlay filesystem designed for agents, backed by Kafka
 and S3. Mount a session over a base directory; mutations commit to Kafka, file
 bytes land in S3, and the workspace can pause, resume, and branch across hosts.
 
+The kfuse CLI interface was inspired by [Modal's Overeasy](https://github.com/modal-labs/overeasy).
+
 ## Status: public alpha
 
 kfuse `v0.1.x` is an experimental public alpha. It is intended for evaluation,
@@ -250,8 +252,6 @@ session ID, and storage configuration to resume later. On another host, supply
 an equivalent base tree with the same lower ID; the session ID alone does not
 capture the base contents. Never share a lower ID between unrelated base trees.
 If you started the local stack, stop it with `make local-down` when finished.
-
-The kfuse CLI interface was inspired by [Modal's Overeasy](https://github.com/modal-labs/overeasy).
 
 ## How it works
 
