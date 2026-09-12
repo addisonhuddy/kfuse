@@ -7,6 +7,46 @@ kfuse is a branching overlay filesystem designed for agents, backed by Kafka
 and S3. Mount a session over a base directory; mutations commit to Kafka, file
 bytes land in S3, and the workspace can pause, resume, and branch across hosts.
 
+## Status: public alpha
+
+kfuse `v0.1.x` is an experimental public alpha. It is intended for evaluation,
+demos, and development of agent workflows — not for production workloads.
+Expect rough edges: there are no stability, support, or production-readiness
+guarantees, and behavior, CLI surfaces, and stored formats may change between
+releases.
+
+### Security and concurrency boundaries
+
+- **Persistence and branching, not a security sandbox.** kfuse does not
+  isolate untrusted code. The demos run privileged containers and disposable
+  cloud sandboxes for convenience; neither is a hostile-code isolation
+  boundary. Code running inside a kfuse mount — including agent code in the
+  examples — needs its own sandboxing, and the Kafka/S3 credentials you give
+  kfuse should be scoped to what a compromised mount could reach.
+- **The writer lease is best-effort, not an atomic distributed lock.** As
+  described in [How it works](#how-it-works), mount refuses a second healthy
+  writer while a live lease exists, but concurrent writers are not strongly
+  fenced: a frozen or crashed writer can miss losing the lease until its next
+  renewal, so split-brain around lease expiry is a real operational
+  limitation, not a correctness guarantee.
+- **Not the sole copy of your data.** kfuse can only resume or branch as far
+  back as retained Kafka records and S3 state images allow (see
+  [Limits](#limits)); Kafka retention and bucket lifecycle policy bound
+  recovery, and remote state cleanup is not automatic. Keep independent
+  backups of important data and verify your retention settings before relying
+  on resume or branch for anything you cannot afford to lose.
+
+### Compatibility policy
+
+Proposed policy for the alpha period, pending maintainer sign-off on this
+section: kfuse does not guarantee cross-version compatibility for stored
+state. Sessions, checkpoint state images, and Kafka event records written by
+one release may not be readable by a different release. Resume and branch
+within the release that created the session, and treat existing remote state
+as disposable across upgrades. Breaking changes to stored formats will be
+called out in the release notes; this policy will be revisited before a stable
+release.
+
 ## Getting Started
 
 Pick how you want to run the CLI, then try one of the demos below.
