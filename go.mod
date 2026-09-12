@@ -10,7 +10,7 @@ require (
 	github.com/aws/smithy-go v1.27.7
 	github.com/hanwen/go-fuse/v2 v2.11.0
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 	google.golang.org/protobuf v1.36.12
 )
 
