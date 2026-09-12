@@ -9,7 +9,10 @@ A credential-free development stack for the real kfuse binary. It runs:
 
 Hosted Confluent Cloud + AWS S3 remains the preferred kfuse deployment. This
 stack exists for local development and for validating that the production
-Kafka/S3 code paths work against other providers.
+Kafka/S3 code paths work against other providers. It runs a single broker
+(replication factor 1) and is not a durability reference — before deploying
+hosted storage, see [OPERATIONS.md](../../OPERATIONS.md) for the topic and
+bucket settings that keep session history replayable.
 
 ## Start
 

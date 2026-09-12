@@ -243,6 +243,10 @@ If you started the local stack, stop it with `make local-down` when finished.
   than assuming unlimited history.
 - Blob cleanup and deletion of retained remote history are not automatic; plan
   bucket lifecycle and cost controls without expiring objects needed by sessions.
+- Before relying on persistent sessions, see [OPERATIONS.md](OPERATIONS.md) for
+  the Kafka topic and S3 bucket settings (no compaction, fixed partition count,
+  retention, replication, lifecycle, least-privilege credentials) that keep
+  history replayable.
 
 ## Troubleshooting
 
