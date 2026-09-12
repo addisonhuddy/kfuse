@@ -1,0 +1,78 @@
+name: Quickstart
+
+# Makes the documented getting-started experience an executable contract:
+# `make local-demo` (examples/local/demo.sh -> run.sh -> walkthrough.sh) runs
+# in a clean Linux Docker environment on every PR, without hosted
+# credentials. The walkthrough itself asserts persistence across
+# unmount/resume, child/branch isolation from the parent, and checkpointing;
+# this workflow asserts its real output contract (the COMPLETE line) rather
+# than re-encoding the steps in YAML. FUSE unavailability is a hard failure,
+# not a skip: run.sh preflight and the in-container preflight_mount both
+# refuse to proceed without a usable /dev/fuse.
+#
+# Fork-safe: no secrets anywhere in this file. Hosted Confluent/AWS
+# validation stays in the secrets-gated `integration` job in ci.yml.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the documented local quickstart (make local-demo)
+        env:
+          # Bind-mounted over the container's /tmp/kfuse-demo by run.sh so
+          # the walkthrough's logs are collectible below.
+          KFUSE_DEMO_LOG_DIR: ${{ github.workspace }}/kfuse-demo-logs
+        run: |
+          mkdir -p "$KFUSE_DEMO_LOG_DIR"
+          make local-demo 2>&1 | tee "$KFUSE_DEMO_LOG_DIR/console.log"
+          grep -qE 'COMPLETE \(([0-9]+)/\1\)' "$KFUSE_DEMO_LOG_DIR/console.log"
+      - name: Verify retained logs carry only dummy credentials
+        if: failure()
+        run: |
+          if grep -rInE 'AKIA[0-9A-Z]{16}|BEGIN [A-Z ]*PRIVATE KEY|confluent\.cloud' \
+              kfuse-demo-logs/; then
+            echo "refusing to upload logs: they appear to contain real credentials" >&2
+            exit 1
+          fi
+      - name: Retain demo logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kfuse-demo-logs
+          path: kfuse-demo-logs/
+          retention-days: 14
+      - name: Stop the local stack
+        if: always()
+        run: make local-down
+
+  # The release advertises linux/amd64 and linux/arm64; execute both snapshot
+  # binaries instead of trusting the cross-build.
+  arch-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: docker/setup-qemu-action@v3
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --snapshot --clean --skip=docker
+      - name: Execute both advertised-architecture binaries
+        run: bash scripts/verify_snapshot_arches.sh dist
