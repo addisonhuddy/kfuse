@@ -5,8 +5,10 @@
 #     image leg is skipped — cross-arch builds need QEMU/binfmt and are
 #     exercised by the release workflow on tag pushes)
 #   - validates checksums.txt against the produced archives
-#   - checks the advertised linux/amd64 + linux/arm64 archives exist and
-#     that the binary inside prints the snapshot version
+#   - checks the advertised linux/darwin amd64 + arm64 archives exist and
+#     that the linux binaries print the snapshot version (darwin binaries
+#     are checked for presence and bundled licenses only — they cannot run
+#     on a Linux host)
 #   - checks each archive bundles LICENSE, NOTICE, THIRD_PARTY_LICENSES.md
 #     and the collected third_party/ license texts
 #   - when a Docker daemon is available, builds a native-arch image with
@@ -45,28 +47,33 @@ can_run() { # $1 = archive arch
   return 1
 }
 
-for arch in amd64 arm64; do
-  archive="dist/kfuse_${version}_linux_${arch}.tar.gz"
-  echo "==> checking $archive"
-  [ -f "$archive" ] || { echo "FAIL: missing $archive"; exit 1; }
+for os in linux darwin; do
+  for arch in amd64 arm64; do
+    archive="dist/kfuse_${version}_${os}_${arch}.tar.gz"
+    echo "==> checking $archive"
+    [ -f "$archive" ] || { echo "FAIL: missing $archive"; exit 1; }
 
-  mkdir -p "$WORK/$arch"
-  tar -xzf "$archive" -C "$WORK/$arch"
-  for f in LICENSE NOTICE THIRD_PARTY_LICENSES.md; do
-    [ -s "$WORK/$arch/$f" ] || { echo "FAIL: $archive missing $f"; exit 1; }
+    mkdir -p "$WORK/$os-$arch"
+    tar -xzf "$archive" -C "$WORK/$os-$arch"
+    for f in LICENSE NOTICE THIRD_PARTY_LICENSES.md; do
+      [ -s "$WORK/$os-$arch/$f" ] || { echo "FAIL: $archive missing $f"; exit 1; }
+    done
+    find "$WORK/$os-$arch/third_party" -type f -name 'LICENSE*' | grep -q . \
+      || { echo "FAIL: $archive missing third_party license texts"; exit 1; }
+    echo "    archive carries LICENSE, NOTICE, THIRD_PARTY_LICENSES.md, third_party/ texts"
+
+    if [ "$os" = darwin ]; then
+      [ -f "$WORK/$os-$arch/kfuse" ] || { echo "FAIL: $archive missing kfuse binary"; exit 1; }
+      echo "    darwin/$arch binary present; version smoke skipped (cannot run on linux)"
+    elif can_run "$arch"; then
+      got=$("$WORK/$os-$arch/kfuse" version)
+      [ "$got" = "$version" ] \
+        || { echo "FAIL: kfuse version printed '$got', want '$version'"; exit 1; }
+      echo "    linux/$arch kfuse version: $got"
+    else
+      echo "    linux/$arch binary present; version smoke skipped (no qemu-aarch64/binfmt)"
+    fi
   done
-  find "$WORK/$arch/third_party" -type f -name 'LICENSE*' | grep -q . \
-    || { echo "FAIL: $archive missing third_party license texts"; exit 1; }
-  echo "    archive carries LICENSE, NOTICE, THIRD_PARTY_LICENSES.md, third_party/ texts"
-
-  if can_run "$arch"; then
-    got=$("$WORK/$arch/kfuse" version)
-    [ "$got" = "$version" ] \
-      || { echo "FAIL: kfuse version printed '$got', want '$version'"; exit 1; }
-    echo "    linux/$arch kfuse version: $got"
-  else
-    echo "    linux/$arch binary present; version smoke skipped (no qemu-aarch64/binfmt)"
-  fi
 done
 
 if docker info >/dev/null 2>&1 && [ -n "$(host_arch)" ]; then

@@ -6,6 +6,16 @@ See `.goreleaser.yaml` (`changelog:` section) for the grouping rules.
 
 ## Unreleased
 
+- feat: macOS (darwin/amd64 + darwin/arm64) release builds; mounts on macOS
+  need macFUSE
+- feat: `install.sh` is now curl-pipe friendly
+  (`curl -fsSL …/install.sh | bash`), defaults to downloading the matching
+  prebuilt archive (linux/darwin, amd64/arm64) with sha256 verification;
+  `--source` still builds from a checkout
+- docs: README trimmed; security boundaries, compatibility policy, and the
+  troubleshooting table moved to OPERATIONS.md
+- ci: `release-snapshot` job asserts the snapshot produces all four archives
+
 ## v0.1.0 — 2026-09-12
 
 - docs: declared public-alpha status and compatibility policy (no

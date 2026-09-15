@@ -483,7 +483,7 @@ func (n *dirNode) Rename(ctx context.Context, name string, newParent fs.InodeEmb
 	from := join(n.path(), name)
 	to := join(nd.path(), newName)
 
-	if flags&unix.RENAME_EXCHANGE != 0 {
+	if flags&renameExchange != 0 {
 		return syscall.ENOTSUP
 	}
 
@@ -502,7 +502,7 @@ func (n *dirNode) Rename(ctx context.Context, name string, newParent fs.InodeEmb
 		return errnoOf(err)
 	}
 	if dst.present() {
-		if flags&unix.RENAME_NOREPLACE != 0 {
+		if flags&renameNoReplace != 0 {
 			return syscall.EEXIST
 		}
 		// `to` must not be a non-empty directory, and kind must agree.

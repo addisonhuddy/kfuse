@@ -15,7 +15,8 @@ echo "kfuse v9.9.9-fake"
 EOF
 chmod 0755 "$tmp/kfuse"
 tar -czf "$srv/download/v9.9.9/kfuse_9.9.9_linux_amd64.tar.gz" -C "$tmp" kfuse
-(cd "$srv/download/v9.9.9" && sha256sum kfuse_9.9.9_linux_amd64.tar.gz > checksums.txt)
+tar -czf "$srv/download/v9.9.9/kfuse_9.9.9_darwin_amd64.tar.gz" -C "$tmp" kfuse
+(cd "$srv/download/v9.9.9" && sha256sum kfuse_9.9.9_linux_amd64.tar.gz kfuse_9.9.9_darwin_amd64.tar.gz > checksums.txt)
 printf '%s\n' '{"tag_name":"v9.9.9"}' > "$srv/api/latest"
 
 port=$(python3 - <<'PY'
@@ -86,6 +87,31 @@ assert_output release_latest_ok "installed kfuse"
 assert_output release_latest_ok "$tmp/bin"
 assert_output release_latest_ok "not on your PATH"
 
+run_case default_mode_release_ok 0 "${release_env[@]}" bash "$ROOT/install.sh" --dest "$tmp/default-bin"
+[ -x "$tmp/default-bin/kfuse" ] || { echo "FAIL default_mode_release_ok (binary missing)"; failures=$((failures + 1)); }
+assert_output default_mode_release_ok "installed kfuse"
+
+run_case pipe_help 0 bash -c "cat '$ROOT/install.sh' | bash -s -- --help"
+assert_output pipe_help "curl -fsSL https://raw.githubusercontent.com/addisonhuddy/kfuse/main/install.sh"
+
+# Fake a darwin host: uname -s/-m come from a stub on PATH, no GOOS/GOARCH.
+fakedir="$tmp/fake-darwin"
+mkdir -p "$fakedir"
+cat > "$fakedir/uname" <<'EOF'
+#!/bin/sh
+case "$1" in
+  -s) echo Darwin ;;
+  -m) echo x86_64 ;;
+  *) echo Darwin ;;
+esac
+EOF
+chmod 0755 "$fakedir/uname"
+run_case release_darwin_ok 0 env -u GOOS -u GOARCH PATH="$fakedir:$PATH" \
+  bash "$ROOT/install.sh" --version v9.9.9 --dest "$tmp/darwin-bin"
+[ -x "$tmp/darwin-bin/kfuse" ] || { echo "FAIL release_darwin_ok (binary missing)"; failures=$((failures + 1)); }
+assert_output release_darwin_ok "kfuse_9.9.9_darwin_amd64.tar.gz"
+assert_output release_darwin_ok "macFUSE"
+
 run_case release_version_ok 0 "${release_env[@]}" bash "$ROOT/install.sh" --release --version v9.9.9 --dest "$tmp/version-bin"
 [ -x "$tmp/version-bin/kfuse" ] || { echo "FAIL release_version_ok (binary missing)"; failures=$((failures + 1)); }
 
@@ -103,8 +129,8 @@ assert_output release_checksum_mismatch "checksum mismatch"
 [ ! -e "$tmp/checksum-bin/kfuse" ] || { echo "FAIL release_checksum_mismatch (binary installed)"; failures=$((failures + 1)); }
 cp "$tmp/checksums.good" "$srv/download/v9.9.9/checksums.txt"
 
-run_case release_unsupported_os 1 env GOARCH=amd64 GOOS=darwin bash "$ROOT/install.sh" --release --dest "$tmp/os-bin"
-assert_output release_unsupported_os "linux-only"
+run_case release_unsupported_os 1 env GOARCH=amd64 GOOS=windows bash "$ROOT/install.sh" --release --dest "$tmp/os-bin"
+assert_output release_unsupported_os "linux/darwin-only"
 [ ! -d "$tmp/os-bin" ] || { echo "FAIL release_unsupported_os (dest created)"; failures=$((failures + 1)); }
 
 run_case release_unsupported_arch 1 env GOARCH=mips GOOS=linux bash "$ROOT/install.sh" --release --dest "$tmp/arch-bin"
@@ -116,7 +142,7 @@ assert_output release_cross_rejected "--source"
 
 minimal_path="$tmp/minimal-path"
 mkdir -p "$minimal_path"
-for tool in bash uname mkdir tar sha256sum grep sed head install mktemp rm tr cat env dirname; do
+for tool in bash uname mkdir tar sha256sum grep sed head install mktemp rm tr cat env dirname chmod; do
   ln -s "$(command -v "$tool")" "$minimal_path/$tool"
 done
 run_case release_missing_curl 1 env PATH="$minimal_path" GOARCH=amd64 GOOS=linux HOME="$HOME" \

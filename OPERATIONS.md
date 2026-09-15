@@ -302,6 +302,62 @@ and `s3:DeleteObject` is narrowly scoped — if you omit it entirely, unmount
 still succeeds but the stale lease persists for its ~45 s TTL before another
 writer can take the session.
 
+## Security and concurrency boundaries
+
+- **Persistence and branching, not a security sandbox.** kfuse does not
+  isolate untrusted code. The demos run privileged containers and disposable
+  cloud sandboxes for convenience; neither is a hostile-code isolation
+  boundary. Code running inside a kfuse mount — including agent code in the
+  examples — needs its own sandboxing, and the Kafka/S3 credentials you give
+  kfuse should be scoped to what a compromised mount could reach.
+- **The writer lease is best-effort, not an atomic distributed lock.** Mount
+  refuses a second healthy writer while a live lease exists, but concurrent
+  writers are not strongly fenced: a frozen or crashed writer can miss losing
+  the lease until its next renewal, so split-brain around lease expiry is a
+  real operational limitation, not a correctness guarantee.
+- **Not the sole copy of your data.** kfuse can only resume or branch as far
+  back as retained Kafka records and S3 state images allow; Kafka retention
+  and bucket lifecycle policy bound recovery, and remote state cleanup is not
+  automatic. Keep independent backups of important data and verify your
+  retention settings before relying on resume or branch for anything you
+  cannot afford to lose.
+
+## Compatibility policy
+
+During the alpha period, kfuse does not guarantee cross-version compatibility
+for stored state. Sessions, checkpoint state images, and Kafka event records
+written by one release may not be readable by a different release. Resume and
+branch within the release that created the session, and treat existing remote
+state as disposable across upgrades. Breaking changes to stored formats will
+be called out in the release notes; this policy will be revisited before a
+stable release.
+
+## Supported filesystem surface
+
+- Linux FUSE and macOS (macFUSE); release builds target `linux/amd64`,
+  `linux/arm64`, `darwin/amd64`, and `darwin/arm64`.
+- Supported filesystem behavior covers regular files, directories, symlinks,
+  rename, truncate, attributes, and fsync. Hardlinks, xattrs, ACLs, advisory
+  locks, and device/socket/FIFO files are outside the current scope.
+- Branching from an old offset requires the parent records and any needed
+  state image to remain available (see section 3). Blob cleanup and deletion
+  of retained remote history are not automatic (see section 5).
+
+## Troubleshooting
+
+| Symptom | Next check |
+|---|---|
+| `missing required env: ...` | Fill `.env` for hosted examples or export the variables required by the CLI. The local demo supplies its own configuration. |
+| SASL error `[58]` | Use a Confluent Cloud **Kafka API key**, not a Global/org key. |
+| `mount never became live` | Use Linux FUSE support or a privileged Linux container with `/dev/fuse`; on macOS install macFUSE. |
+| `session locked` | Another live mount owns the session lease; unmount it or wait for lease expiry. |
+| `Device or resource busy` on unmount | Close files and move shells/processes out of the mounted lower before `kfuse umount`. |
+| `stage=auth` in launcher output | Kafka SASL or S3 credentials rejected; the launcher prints the next action — see [examples/local/README.md](examples/local/README.md#failure-stages). |
+| `stage=broker` in launcher output | Broker unreachable; check `BOOTSTRAP_SERVER`, egress, and `KAFKA_TLS` — see the failure-stages table. |
+| `stage=bucket` in launcher output | S3 bucket missing or wrong region/endpoint — see the failure-stages table. |
+| `stage=topic` in launcher output | `KAFKA_TOPIC` missing; create it or grant Create/Describe ACLs — see the failure-stages table. |
+| `stage=fuse` in launcher output | No usable FUSE on the host — see the failure-stages table. |
+
 ## Failure modes this prevents
 
 | Silent symptom | Likely cause |

@@ -18,9 +18,9 @@ read-only and degrades gracefully with fewer permissions.
 git tag v0.x.y && git push origin v0.x.y
 ```
 
-`.github/workflows/release.yml` runs GoReleaser: linux/amd64 + linux/arm64
-tarballs, `checksums.txt`, a GitHub Release, and a multi-arch image to
-`docker.io/addisonhuddy/kfuse` (needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
+`.github/workflows/release.yml` runs GoReleaser: linux + darwin tarballs for
+amd64 and arm64 (four archives total), `checksums.txt`, a GitHub Release, and
+a multi-arch image to `docker.io/addisonhuddy/kfuse` (needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
 repository secrets).
 
 ## 1. Branch protection on `main`

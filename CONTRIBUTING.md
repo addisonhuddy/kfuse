@@ -68,13 +68,14 @@ make release-snapshot  # goreleaser --snapshot: archives + checksums in dist/
 
 ### Platform support
 
-kfuse mounts are Linux-only, and a native build is too: `internal/fs` uses
-Linux-only rename flags (`unix.RENAME_EXCHANGE`, `unix.RENAME_NOREPLACE`), so
-`GOOS=darwin go build ./...` does not compile. Cross-compiling *to* Linux is
-supported — `GOOS=linux GOARCH=amd64 ./install.sh --output dist/kfuse` on any
+kfuse builds natively on Linux and macOS (`GOOS=darwin go build ./...`
+compiles — `internal/fs` carries per-OS rename-flag constants in
+`rename_linux.go`/`rename_other.go`). A mount needs FUSE: `fuse3` on Linux,
+macFUSE on macOS. Cross-compiling is supported —
+`GOOS=linux GOARCH=amd64 ./install.sh --source --output dist/kfuse` on any
 host produces a binary for a Linux sandbox (likewise `GOARCH=arm64`). This is
-how the E2B demo builds its sandbox binary; it does not mean macOS can host a
-mount. Releases ship `linux/amd64` and `linux/arm64` binaries only.
+how the E2B demo builds its sandbox binary. Releases ship `linux/amd64`,
+`linux/arm64`, `darwin/amd64`, and `darwin/arm64` binaries.
 
 ### CI
 
@@ -101,7 +102,8 @@ when the secrets are not configured.
 
 Maintainers cut a release by pushing a tag: `git tag v0.x.y && git push origin
 v0.x.y`. `.github/workflows/release.yml` runs GoReleaser, which builds
-`linux/amd64` and `linux/arm64` binaries, attaches tar.gz archives and
+`linux/amd64`, `linux/arm64`, `darwin/amd64`, and `darwin/arm64` binaries,
+attaches tar.gz archives and
 `checksums.txt` to the GitHub Release, and pushes a multi-arch image to
 `docker.io/addisonhuddy/kfuse`. The workflow needs `DOCKERHUB_USERNAME` and
 `DOCKERHUB_TOKEN` repository secrets. Maintainer-side release and repository

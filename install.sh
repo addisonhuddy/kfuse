@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
 # Install the kfuse binary.
 #
-#   ./install.sh                          # build from source, native GOOS/GOARCH
-#   ./install.sh --release                # download latest prebuilt linux binary
-#   ./install.sh --release --version v0.1.0
-#   ./install.sh --release --dest DIR
+#   curl -fsSL https://raw.githubusercontent.com/addisonhuddy/kfuse/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/addisonhuddy/kfuse/main/install.sh | bash -s -- --version v0.1.0 --dest ~/bin
+#
+# From a checkout:
+#
+#   ./install.sh                          # download latest prebuilt binary
+#   ./install.sh --source                 # build from source instead
 #   GOOS=linux GOARCH=amd64 ./install.sh --source --output dist/kfuse
 #
-# --release fetches the matching tar.gz + checksums.txt from GitHub Releases
-# and verifies the sha256 before installing. It never falls back to a source
-# build.
+# Default mode downloads the matching tar.gz + checksums.txt from GitHub
+# Releases for linux/darwin (amd64/arm64) and verifies the sha256 before
+# installing. It never falls back to a source build. --source requires a
+# kfuse checkout (it needs go.mod and ./cmd/kfuse).
 #
 # Installs to /usr/local/bin when writable, else $HOME/.local/bin.
 set -euo pipefail
-cd "$(dirname "$0")"
 
 REPO=addisonhuddy/kfuse
-MODE=source
+MODE=release
 VERSION=""
 DEST=""
 OUTPUT=""
@@ -24,6 +27,23 @@ OUTPUT=""
 die() {
   echo "install.sh: $*" >&2
   exit 1
+}
+
+usage() {
+  cat <<'USAGE'
+Install the kfuse binary.
+
+  curl -fsSL https://raw.githubusercontent.com/addisonhuddy/kfuse/main/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/addisonhuddy/kfuse/main/install.sh | bash -s -- --version v0.1.0 --dest ~/bin
+
+Options:
+  --release            download a prebuilt release binary (default)
+  --source             build from source; must run from a kfuse checkout
+  --version VERSION    release tag to install, e.g. v0.1.0 (default: latest)
+  --dest DIR           install directory (default: /usr/local/bin or ~/.local/bin)
+  --output PATH        --source cross-compile output file (with GOOS/GOARCH)
+  -h, --help           show this help
+USAGE
 }
 
 while [ $# -gt 0 ]; do
@@ -48,7 +68,7 @@ while [ $# -gt 0 ]; do
       shift
       ;;
     --output=*) OUTPUT="${1#--output=}" ;;
-    -h | --help) sed -n '2,18p' "$0"; exit 0 ;;
+    -h | --help) usage; exit 0 ;;
     *) echo "install.sh: unknown flag $1" >&2; exit 2 ;;
   esac
   shift
@@ -68,8 +88,10 @@ if [ "$TARGET_OS" != "$HOST_OS" ] || [ "$TARGET_ARCH" != "$HOST_ARCH" ]; then
 fi
 
 if [ "$MODE" = release ]; then
-  [ "$TARGET_OS" = linux ] ||
-    die "prebuilt binaries are linux-only (got $TARGET_OS); use --source"
+  case "$TARGET_OS" in
+    linux | darwin) ;;
+    *) die "prebuilt binaries are linux/darwin-only (got $TARGET_OS); use --source" ;;
+  esac
   case "$TARGET_ARCH" in
     amd64 | arm64) ;;
     *) die "unsupported architecture $TARGET_ARCH; supported: amd64, arm64" ;;
@@ -78,14 +100,27 @@ if [ "$MODE" = release ]; then
   [ "$CROSS" -eq 0 ] ||
     die "release mode installs for the current host only; for another machine download the asset from the releases page or use --source with GOOS/GOARCH and --output"
   missing_tools=()
-  for tool in curl tar sha256sum; do
+  for tool in curl tar; do
     command -v "$tool" >/dev/null 2>&1 || missing_tools+=("$tool")
   done
+  if command -v sha256sum >/dev/null 2>&1; then
+    SHA256_CHECK=(sha256sum)
+  elif command -v shasum >/dev/null 2>&1; then
+    SHA256_CHECK=(shasum -a 256)
+  else
+    missing_tools+=("sha256sum or shasum")
+  fi
   [ "${#missing_tools[@]}" -eq 0 ] ||
     die "missing required tool(s): ${missing_tools[*]}"
 else
   [ -z "$VERSION" ] || die "--version is only valid with --release"
   command -v go >/dev/null 2>&1 || die "required tool not found: go"
+  # --source needs the checkout; when the script arrives via a curl pipe there
+  # is no script path to locate it from.
+  SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]:-.}")" 2>/dev/null && pwd || true)
+  [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/go.mod" ] ||
+    die "run --source from a kfuse checkout (needs go.mod)"
+  cd "$SCRIPT_DIR"
   if [ "$CROSS" -eq 0 ] && [ -n "$OUTPUT" ]; then
     echo "install.sh: --output is only valid for cross-compilation" >&2
     exit 2
@@ -143,19 +178,19 @@ download_release() {
     [ -n "$tag" ] || die "could not resolve latest release from $api_url"
   fi
   ver="${tag#v}"
-  asset="kfuse_${ver}_linux_${TARGET_ARCH}.tar.gz"
+  asset="kfuse_${ver}_${TARGET_OS}_${TARGET_ARCH}.tar.gz"
   release_base="${base%/}/$tag"
 
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
   echo "install.sh: downloading $asset ($tag)"
   curl -fsSL -o "$tmp/$asset" "$release_base/$asset" ||
-    die "release asset $asset not found at $release_base/$asset (check --version and that the release publishes linux/$TARGET_ARCH)"
+    die "release asset $asset not found at $release_base/$asset (check --version and that the release publishes $TARGET_OS/$TARGET_ARCH)"
   curl -fsSL -o "$tmp/checksums.txt" "$release_base/checksums.txt" ||
     die "checksums.txt not found at $release_base/checksums.txt"
   checksum_line=$(grep -E "[[:space:]]$asset$" "$tmp/checksums.txt" || true)
   [ -n "$checksum_line" ] || die "checksums.txt has no entry for $asset"
-  printf '%s\n' "$checksum_line" | (cd "$tmp" && sha256sum -c --quiet -) ||
+  printf '%s\n' "$checksum_line" | (cd "$tmp" && "${SHA256_CHECK[@]}" -c - >/dev/null) ||
     die "checksum mismatch for $asset; refusing to install"
   tar -tzf "$tmp/$asset" | grep -qx 'kfuse' ||
     die "release archive $asset does not contain kfuse"
@@ -177,4 +212,7 @@ if [ "$CROSS" -eq 0 ]; then
     *":$DEST:"*) ;;
     *) echo "install.sh: $DEST is not on your PATH; add it with: export PATH=\"$DEST:\$PATH\"" >&2 ;;
   esac
+  if [ "$TARGET_OS" = darwin ]; then
+    echo "install.sh: macOS needs macFUSE: brew install --cask macfuse"
+  fi
 fi
