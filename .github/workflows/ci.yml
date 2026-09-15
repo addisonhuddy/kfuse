@@ -63,33 +63,15 @@ jobs:
           distribution: goreleaser
           version: "~> v2"
           args: release --snapshot --clean --skip=docker
-      - run: ls -l dist/*.tar.gz dist/checksums.txt
-
-  # Asserts the snapshot produces every archive the install script and the
-  # release footer advertise: linux/darwin x amd64/arm64 + checksums.txt.
-  release-snapshot:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: go.mod
-      - uses: goreleaser/goreleaser-action@v6
-        with:
-          distribution: goreleaser
-          version: "~> v2"
-          args: release --snapshot --clean --skip=docker
-      - run: |
-          ls dist/*.tar.gz
+      - name: snapshot archives (linux/darwin x amd64/arm64)
+        run: |
+          ls -l dist/*.tar.gz dist/checksums.txt
           version=$(python3 -c 'import json; print(json.load(open("dist/metadata.json"))["version"])')
           for os in linux darwin; do
             for arch in amd64 arm64; do
               test -f "dist/kfuse_${version}_${os}_${arch}.tar.gz"
             done
           done
-          test -f dist/checksums.txt
 
   # Provider-neutral integration coverage: the same tests run against local
   # Apache Kafka (single-node KRaft) and MinIO on every PR, without secrets.
