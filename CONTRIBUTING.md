@@ -37,7 +37,7 @@ or DCO sign-off requirement. New Go files should carry the standard header:
 
 Contributor development happens on Linux. You need:
 
-- Go 1.26.4 or newer (see `go.mod`);
+- Go at the version in the `go` directive of `go.mod` or newer;
 - `golangci-lint` v2 for `make lint` (CI pins the version in
   `.github/workflows/ci.yml`);
 - `fuse3`/`fusermount3` and a working `/dev/fuse` for `make test-fuse` and
@@ -63,7 +63,7 @@ make integration-test  # needs a repo-root .env (see below); the same suite
                        # also runs against the credential-free local stack
 make local-up local-demo local-down  # local Kafka (KRaft) + MinIO stack and demo
 make docker-build # build the release Dockerfile locally
-make release-snapshot  # goreleaser --snapshot: archives + checksums in dist/
+make release-snapshot  # goreleaser --snapshot: archives, SBOMs (needs syft), checksums in dist/
 ```
 
 ### Platform support

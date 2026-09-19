@@ -7,10 +7,24 @@ linters:
     - errcheck
     - ineffassign
     - unused
+    - gosec
   settings:
     errcheck:
       exclude-functions:
         - (io.Closer).Close
+    gosec:
+      excludes:
+        # kfuse is a filesystem: it reads/writes caller-chosen paths, spawns
+        # fusermount3 and its own daemon, and mirrors POSIX modes (0644/0755)
+        # for state markers. Numeric conversions between FUSE, protobuf, and
+        # Go widths are bounds-checked at the FUSE boundary.
+        - G115 # integer overflow conversion
+        - G204 # subprocess launched with variable
+        - G301 # directory permissions
+        - G302 # file permissions
+        - G304 # file inclusion via variable
+        - G306 # WriteFile permissions
+        - G703 # path traversal (paths come from the operator's flags/env)
 
 formatters:
   enable:

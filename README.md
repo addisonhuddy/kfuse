@@ -7,6 +7,44 @@ kfuse is a branching overlay filesystem designed for agents, backed by Kafka
 and S3. Mount a session over a base directory; mutations commit to Kafka, file
 bytes land in S3, and the workspace can pause, resume, and branch across hosts.
 
+- **Persist**: every write is a Kafka record; the workspace survives the
+  process, container, or sandbox that made it.
+- **Resume**: mount the same session on any Linux host and pick up where you
+  left off.
+- **Branch**: fork a session at any committed offset into independent
+  children — try N approaches from one starting point.
+
+```text
+              agent / shell / tool
+                       |
+            +----------v-----------+
+            |     kfuse mount      |  FUSE: lower (read-only base tree)
+            |   lower  +  upper    |        + in-memory upper (mutations)
+            +-----+----------+-----+
+                  |          |
+         mutation events   file bytes
+                  |          |
+           +------v-----+ +--v-----------------+
+           |   Kafka    | |        S3          |
+           |   topic    | | content-addressed  |
+           |  (commit   | | blobs, state       |
+           |   point)   | | images, lease      |
+           +------------+ +--------------------+
+
+     checkpoint = state image in S3 covering Kafka offset N
+     branch     = new session that replays the parent up to offset N
+```
+
+**Try it in one command** (Linux Docker host with `/dev/fuse`, no credentials):
+
+```sh
+git clone https://github.com/addisonhuddy/kfuse.git && cd kfuse && make local-demo
+```
+
+That starts Kafka + MinIO, mounts a session, writes files, unmounts, resumes,
+checkpoints, and branches — ending with `COMPLETE (42/42)`. Then read
+[Getting Started](#getting-started) or jump to the [CLI reference](#cli-reference).
+
 The kfuse CLI interface was inspired by [Modal's Overeasy](https://github.com/modal-labs/overeasy).
 
 ## Status: public alpha
@@ -65,19 +103,24 @@ Docker Desktop mount support is not currently validated.
 
 ### Binary
 
-Download the latest release (`v0.1.0`) for your architecture and extract it:
+Download the [latest release](https://github.com/addisonhuddy/kfuse/releases/latest)
+for your architecture and extract it:
 
 ```sh
-# linux/amd64
-curl -sSL https://github.com/addisonhuddy/kfuse/releases/download/v0.1.0/kfuse_0.1.0_linux_amd64.tar.gz | tar xz
-
-# linux/arm64
-# curl -sSL https://github.com/addisonhuddy/kfuse/releases/download/v0.1.0/kfuse_0.1.0_linux_arm64.tar.gz | tar xz
-
+VER=$(curl -fsSL https://api.github.com/repos/addisonhuddy/kfuse/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
+ARCH=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')
+curl -fsSL "https://github.com/addisonhuddy/kfuse/releases/download/v${VER}/kfuse_${VER}_linux_${ARCH}.tar.gz" | tar xz
 ./kfuse --help
 ```
 
-Release archives include `LICENSE`, `NOTICE`, and `THIRD_PARTY_LICENSES.md`.
+Release archives include `LICENSE`, `NOTICE`, and `THIRD_PARTY_LICENSES.md`,
+and are covered by `checksums.txt`. Releases after `v0.1.0` also ship an SPDX
+SBOM per archive and a Sigstore-signed build provenance attestation; verify a
+download with:
+
+```sh
+gh attestation verify kfuse_${VER}_linux_${ARCH}.tar.gz --repo addisonhuddy/kfuse
+```
 
 #### install.sh
 
@@ -97,16 +140,19 @@ build.
 
 ```sh
 docker run --rm --privileged --device /dev/fuse \
-  addisonhuddy/kfuse:0.1.0 --help
+  addisonhuddy/kfuse:latest --help
 ```
 
-Available tags: `0.1.0`, `v0.1`, and `latest`. The image only ships the binary;
+Tags: `latest`, `vMAJOR.MINOR` (e.g. `v0.1`), and the exact version (e.g.
+`0.1.0`); see [Docker Hub](https://hub.docker.com/r/addisonhuddy/kfuse/tags).
+The image only ships the binary;
 to actually mount a session you still need Kafka and S3 (or the local stack from
 the demo below).
 
 ### Source
 
-To build and install the CLI from source, use Go 1.26.4 or newer. On Linux:
+To build and install the CLI from source, use the Go version in the `go`
+directive of [go.mod](go.mod) or newer. On Linux:
 
 ```sh
 ./install.sh
@@ -169,7 +215,7 @@ sandboxes and verifies replay from both a checkpoint and a branch's latest state
 
 On your development machine, you need:
 
-- Go 1.26.4 or newer on `PATH`;
+- Go (the version in [go.mod](go.mod) or newer) on `PATH`;
 - uv and Python 3.10 or newer;
 - an E2B API key;
 - a Kafka broker and S3-compatible bucket reachable from the E2B sandboxes.
@@ -251,7 +297,47 @@ The file should still contain `hello`. Save the lower directory, lower ID,
 session ID, and storage configuration to resume later. On another host, supply
 an equivalent base tree with the same lower ID; the session ID alone does not
 capture the base contents. Never share a lower ID between unrelated base trees.
+
+Checkpoint the session, then branch it and mount the child alongside a copy of
+the base tree:
+
+```sh
+./kfuse mount "$SID" --lower "$BASE" --lower-id "$LOWER_ID"
+printf 'v2\n' > "$BASE/hello.txt"
+OFFSET=$(./kfuse checkpoint --lower "$BASE" --lower-id "$LOWER_ID")   # asks the live mount to flush
+./kfuse umount --lower "$BASE" --lower-id "$LOWER_ID"
+
+CHILD=$(./kfuse session branch "$SID" --to "$OFFSET" --lower "$BASE" --lower-id "$LOWER_ID")
+./kfuse mount "$CHILD" --lower "$BASE" --lower-id "$LOWER_ID"
+cat "$BASE/hello.txt"            # v2 — inherited from the parent at $OFFSET
+printf 'child\n' > "$BASE/hello.txt"   # only the child sees this
+./kfuse umount --lower "$BASE" --lower-id "$LOWER_ID"
+```
+
 If you started the local stack, stop it with `make local-down` when finished.
+
+## CLI reference
+
+Every command takes `--lower/-l <dir>` (default: cwd) and `--lower-id <id>`
+(default: `KF_LOWER_ID`, else minted and persisted in the lower). Run
+`kfuse <command> --help` for details.
+
+| Command | Purpose |
+|---|---|
+| `kfuse session new` | Create a session over the lower and print its ID. |
+| `kfuse session ls` | List sessions recorded for this lower. |
+| `kfuse session select <sid>` | Set the default session for `kfuse mount` (local state only). |
+| `kfuse session branch <parent> [--to N]` | Fork a child session from the parent at offset `N` (default: current committed tail) and print its ID. |
+| `kfuse mount [sid] [--foreground]` | Mount the session over the lower; replays from the latest checkpoint plus newer Kafka records and takes the writer lease. |
+| `kfuse status` | Exit 0 when a mount is live; print the session and offsets. |
+| `kfuse checkpoint [sid]` | Flush a state image to S3 and print the covered Kafka offset. |
+| `kfuse umount` | Unmount and release the writer lease. |
+| `kfuse version` | Print the build version. |
+
+Configuration is environment-only; the full variable list is in
+[.env.example](.env.example). Local per-lower state (session marker, daemon
+pidfile/socket, logs) lives under `KF_STATE_DIR`, else `$XDG_STATE_HOME/kfuse`,
+else `~/.kfuse`.
 
 ## How it works
 
@@ -289,6 +375,62 @@ If you started the local stack, stop it with `make local-down` when finished.
   the Kafka topic and S3 bucket settings (no compaction, fixed partition count,
   retention, replication, lifecycle, least-privilege credentials) that keep
   history replayable.
+
+## Why kfuse
+
+kfuse sits between "snapshot the whole VM" and "commit to git":
+
+| | kfuse | git worktree / commit | overlayfs / container layers | VM or sandbox snapshot |
+|---|---|---|---|---|
+| Captures untracked files, build output, generated data | yes | only what you `git add` | yes | yes |
+| Survives the host/sandbox dying | yes (Kafka + S3) | only after push | no (host-local) | yes |
+| Branch at any past point without a prior commit | yes (any committed offset) | needs a commit | no | needs a snapshot |
+| Resume on a different host | yes (same base tree + lower ID) | clone/pull | no | same hypervisor/provider |
+| Granularity | per-write event | per-commit | per-layer | whole image |
+| Needs | Linux FUSE, Kafka, S3 | git | kernel overlayfs | provider tooling |
+
+It is a good fit when many agents (or many attempts by one agent) need cheap,
+independent, durable copies of a working directory that outlive the compute
+they run on. It is not a replacement for git as a source of truth, and it is
+not a sandbox (see [Security and concurrency boundaries](#security-and-concurrency-boundaries)).
+
+## FAQ
+
+**Does kfuse need Confluent Cloud or AWS?** No. Any Kafka broker and any
+S3-compatible object store work; the local demo uses Apache Kafka in KRaft mode
+and MinIO. Confluent Cloud and AWS S3 are simply the hosted setup the examples
+are tested against.
+
+**Can I run it on macOS or Windows?** Not natively — the mount needs Linux FUSE.
+Use a Linux VM, a privileged Linux container, or the E2B demo, where the mount
+runs inside a cloud sandbox.
+
+**Where does the base (lower) tree come from on a new host?** You bring it.
+kfuse records mutations relative to the lower, not the lower itself, so the
+resuming host needs an equivalent base tree under the same lower ID (a git
+checkout at the same commit, a container image layer, and so on).
+
+**How big can a session get?** File bytes go to S3 as content-addressed blobs,
+so data volume is bounded by your bucket, not memory. The upper's metadata
+(nodes, extents, attributes) is held in memory on the mounting host.
+
+**What happens if two hosts mount the same session?** The second mount is
+refused while the first holds a live lease. The lease is best-effort, not an
+atomic lock; see [How it works](#how-it-works) for the split-brain caveat.
+
+**How do I delete a session?** There is no `session rm` yet. Remote history is
+retained until Kafka retention and S3 lifecycle policy expire it; see
+[OPERATIONS.md](OPERATIONS.md).
+
+## Roadmap
+
+Tracked in [GitHub issues](https://github.com/addisonhuddy/kfuse/issues).
+Before a beta, the main themes are:
+
+- a stored-format compatibility guarantee (versioned state images and events);
+- stronger writer fencing than the best-effort S3 lease;
+- session lifecycle commands (`session rm`, blob garbage collection);
+- xattrs and hardlinks in the overlay.
 
 ## Troubleshooting
 
