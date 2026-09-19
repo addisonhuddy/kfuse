@@ -61,12 +61,13 @@ jobs:
           out=$(docker run --rm kfuse:ci version)
           echo "$out"
           test "$out" = "ci-${GITHUB_SHA::7}"
+      - uses: anchore/sbom-action/download-syft@v0
       - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: "~> v2"
           args: release --snapshot --clean --skip=docker
-      - run: ls -l dist/*.tar.gz dist/checksums.txt
+      - run: ls -l dist/*.tar.gz dist/*.sbom.json dist/checksums.txt
 
   # Provider-neutral integration coverage: the same tests run against local
   # Apache Kafka (single-node KRaft) and MinIO on every PR, without secrets.

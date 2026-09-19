@@ -63,7 +63,7 @@ make integration-test  # needs a repo-root .env (see below); the same suite
                        # also runs against the credential-free local stack
 make local-up local-demo local-down  # local Kafka (KRaft) + MinIO stack and demo
 make docker-build # build the release Dockerfile locally
-make release-snapshot  # goreleaser --snapshot: archives + checksums in dist/
+make release-snapshot  # goreleaser --snapshot: archives, SBOMs (needs syft), checksums in dist/
 ```
 
 ### Platform support
