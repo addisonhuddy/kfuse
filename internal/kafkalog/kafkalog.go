@@ -187,7 +187,7 @@ func (l *Log) RefreshPartitions(ctx context.Context) error {
 // function, so they always agree.
 func (l *Log) PartitionFor(sessionID string) int {
 	h := fnv.New32a()
-	h.Write([]byte(sessionID))
+	_, _ = h.Write([]byte(sessionID))
 	return int(h.Sum32() % uint32(l.partitionCount()))
 }
 

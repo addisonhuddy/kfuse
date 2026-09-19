@@ -37,7 +37,7 @@ or DCO sign-off requirement. New Go files should carry the standard header:
 
 Contributor development happens on Linux. You need:
 
-- Go 1.26.4 or newer (see `go.mod`);
+- Go at the version in the `go` directive of `go.mod` or newer;
 - `golangci-lint` v2 for `make lint` (CI pins the version in
   `.github/workflows/ci.yml`);
 - `fuse3`/`fusermount3` and a working `/dev/fuse` for `make test-fuse` and

@@ -71,7 +71,7 @@ func (m *Mounter) newLower(st unix.Stat_t) *lowerNode {
 
 func inoFor(rel string) uint64 {
 	h := fnv.New64a()
-	h.Write([]byte(rel))
+	_, _ = h.Write([]byte(rel))
 	v := h.Sum64()
 	if v == 0 {
 		v = 1

@@ -6,6 +6,19 @@ See `.goreleaser.yaml` (`changelog:` section) for the grouping rules.
 
 ## Unreleased
 
+- release: archives now ship an SPDX SBOM and Sigstore-signed build provenance
+  attestations (`gh attestation verify ... --repo addisonhuddy/kfuse`)
+- security: CodeQL (Go + Actions) workflow, `gosec` in golangci-lint,
+  digest-pinned Docker base images tracked by Dependabot, read-only default
+  token permissions in CI, CODEOWNERS; SECURITY.md documents response targets
+  and release verification
+- docs: README leads with a summary, architecture sketch, and one-command
+  quickstart; adds a CLI reference, checkpoint/branch walkthrough, comparison
+  table, FAQ, and roadmap; latest-release download no longer hard-codes a
+  version; Go requirement now points at `go.mod`
+- deps: routine Dependabot bumps (aws-sdk-go-v2, goreleaser-action v7,
+  docker actions v4)
+
 ## v0.1.0 — 2026-09-12
 
 - docs: declared public-alpha status and compatibility policy (no

@@ -3,8 +3,8 @@
 .env.*
 !.env.example
 
-# implementation docs
-/docs/
+# private implementation notes (user docs live in README/*.md, not here)
+/notes/
 
 # Go
 /bin/
