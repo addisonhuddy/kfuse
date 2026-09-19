@@ -58,7 +58,7 @@ jobs:
           out=$(docker run --rm kfuse:ci version)
           echo "$out"
           test "$out" = "ci-${GITHUB_SHA::7}"
-      - uses: goreleaser/goreleaser-action@v6
+      - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: "~> v2"
