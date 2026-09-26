@@ -2,7 +2,7 @@
 # Build:  docker build -f examples/local/Dockerfile -t kfuse-local-demo .
 # Run:    docker run --rm --privileged --device /dev/fuse \
 #           --env-file <creds-file> kfuse-local-demo [demo|shell|bash]
-FROM golang:1.26 AS build
+FROM golang:1.27 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
