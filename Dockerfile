@@ -23,7 +23,7 @@ COPY cmd/kfuse/ cmd/kfuse/
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/kfuse ./cmd/kfuse
 
-FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
 RUN apt-get update \
  && apt-get install -y --no-install-recommends fuse3 ca-certificates \
  && rm -rf /var/lib/apt/lists/*
