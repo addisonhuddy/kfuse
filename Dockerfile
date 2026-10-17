@@ -11,7 +11,7 @@
 # GoReleaser uses Dockerfile.goreleaser instead, which copies its prebuilt
 # binary into the same runtime stage.
 # Builder tag tracks the `go` directive in go.mod.
-FROM --platform=$BUILDPLATFORM golang:1.26.8@sha256:6c2a5538f964f1c82f97ad14988bf05de100d922d159d0e398b54c7b0ca0c6c9 AS build
+FROM --platform=$BUILDPLATFORM golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 AS build
 ARG TARGETOS TARGETARCH
 ARG VERSION=dev
 WORKDIR /src
